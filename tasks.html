@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Tugas - Dzhirasena</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <script>if (localStorage.getItem('dzhirasena_theme') === 'dark') document.body.classList.add('dark-theme');</script>
+
+    <!-- Container content for Layout.js to inject and wrap -->
+    <div id="page-content">
+        <!-- VIEW B: ALL TASKS (TO-DO LIST KERJA) -->
+        <section id="tasks-view" class="app-view">
+            <div class="view-header-row">
+                <div>
+                    <h1 class="view-title">To-Do List Kerja</h1>
+                    <p class="view-subtitle">Kelola tugas harian agar pekerjaan lebih teratur.</p>
+                </div>
+                <button class="btn btn-primary" id="btn-show-add-task-modal">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5"
+                        fill="none">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Tambah Tugas</span>
+                </button>
+            </div>
+
+            <!-- Search and filters toolbar -->
+            <div class="toolbar-card">
+                <div class="toolbar-search">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="task-list-search" placeholder="Cari tugas...">
+                </div>
+                <div class="toolbar-filters">
+                    <select id="filter-task-status" class="toolbar-select">
+                        <option value="all">Semua Status</option>
+                        <option value="running">In Progress (Berjalan)</option>
+                        <option value="completed">Completed (Selesai)</option>
+                    </select>
+                    <select id="filter-task-assignee" class="toolbar-select">
+                        <option value="all">Semua Karyawan</option>
+                        <!-- Hydrated dynamically -->
+                    </select>
+                    <select id="filter-task-priority" class="toolbar-select">
+                        <option value="all">Semua Prioritas</option>
+                        <option value="Tinggi">Tinggi</option>
+                        <option value="Sedang">Sedang</option>
+                        <option value="Rendah">Rendah</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="task-list-wrapper view-all-tasks-wrapper" id="all-tasks-list">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Shared Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+
+    <!-- Page Logic -->
+    <script src="js/tasks.js"></script>
+</body>
+
+</html>

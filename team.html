@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Tim - Dzhirasena</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <script>if (localStorage.getItem('dzhirasena_theme') === 'dark') document.body.classList.add('dark-theme');</script>
+
+    <!-- Container content for Layout.js to inject and wrap -->
+    <div id="page-content">
+        <!-- VIEW C: TEAM MANAGEMENT (ADMIN ONLY) -->
+        <section id="team-view" class="app-view">
+            <div class="view-header-row">
+                <div>
+                    <h1 class="view-title">Manajemen Pengguna</h1>
+                    <p class="view-subtitle">Kelola akses tim, peran, dan status akun di platform ini.</p>
+                </div>
+                <button class="btn btn-primary" id="btn-show-add-user-modal">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5"
+                        fill="none">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Tambah Pengguna Baru</span>
+                </button>
+            </div>
+
+            <!-- User management stats -->
+            <div class="metrics-grid">
+                <div class="metric-card bg-white-card">
+                    <div class="metric-icon blue-bg">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="#0a52c6" stroke-width="2" fill="none">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span>TOTAL PENGGUNA</span>
+                        <h3 id="stat-total-users">0</h3>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white-card">
+                    <div class="metric-icon green-bg">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="#10b981" stroke-width="2" fill="none">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span>AKTIF SEKARANG</span>
+                        <h3 id="stat-active-users">0</h3>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white-card">
+                    <div class="metric-icon orange-bg">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="#f3a638" stroke-width="2" fill="none">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span>ADMIN</span>
+                        <h3 id="stat-admin-users">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Layout for Team and Categories side-by-side -->
+            <div class="team-grid-layout">
+                <!-- User Table -->
+                <div class="table-card">
+                    <div class="table-responsive">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>PENGGUNA</th>
+                                    <th>ROLE (PERAN)</th>
+                                    <th>STATUS</th>
+                                    <th>AKSI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Category Management -->
+                <div class="widget-card category-card" style="align-self: flex-start;">
+                    <h3 style="margin-top: 0; margin-bottom: 8px;">Kelola Kategori Tugas</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+                        Tambahkan atau hapus kategori untuk pengelompokan tugas tim.
+                    </p>
+
+                    <form id="add-category-form" style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <input type="text" id="new-category-name" placeholder="Nama kategori..." required
+                            style="flex: 1; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none;">
+                        <button type="submit" class="btn btn-primary"
+                            style="padding: 10px 16px; white-space: nowrap;">Tambah</button>
+                    </form>
+
+                    <div id="category-list" class="category-list"
+                        style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 4px;">
+                        <!-- Hydrated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Data Pengguna</h3>
+                <button class="btn-close-modal" id="btn-close-edit-user">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-user-form">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="form-group">
+                        <label for="edit-user-name">Nama Lengkap</label>
+                        <input type="text" id="edit-user-name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-user-role">Role (Peran)</label>
+                        <select id="edit-user-role" class="form-control" required>
+                            <option value="Admin">Admin</option>
+                            <option value="Project Manager">Project Manager</option>
+                            <option value="Atasan">Atasan (Supervisor)</option>
+                            <option value="Owner">Owner (Read-Only)</option>
+                            <option value="Senior Developer">Senior Developer</option>
+                            <option value="UI/UX Designer">UI/UX Designer</option>
+                            <option value="IT Specialist">IT Specialist</option>
+                            <option value="Marketing Specialist">Marketing Specialist</option>
+                            <option value="Data Analyst">Data Analyst</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary btn-block">Simpan Perubahan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shared Scripts -->
+    <script src="js/db.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/layout.js"></script>
+
+    <!-- Page Logic -->
+    <script src="js/team.js"></script>
+</body>
+
+</html>
