@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Task Card HTML Generator
     function createTaskCardHtml(task) {
+        const { description: cleanDesc, username, password } = DB.parseJournalCredentials(task.description);
         const assigneeId = typeof task.assignedTo === 'string' ? task.assignedTo : (Array.isArray(task.assignedTo) ? task.assignedTo[0] : '');
         const assignee = DB.users.find(u => u.id === assigneeId) || { name: "Tidak Dikenal", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" };
         const priorityClass = task.priority.toLowerCase();
@@ -108,9 +109,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <span class="tag tag-prio-${priorityClass}">Prioritas ${task.priority}</span>
                         <span class="tag tag-cat-generic">${task.category}</span>
                         <span class="tag tag-status-${task.status === 'Completed' ? 'completed' : 'running'}">${task.status === 'Completed' ? 'Selesai' : 'Berjalan'}</span>
+                        ${(username || password) ? `<span class="tag" style="background-color: #6366f1; color: white; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Kredensial
+                        </span>` : ''}
                     </div>
                     <h4 class="task-title">${task.title}</h4>
-                    <p class="task-desc">${task.description || "Tidak ada deskripsi."}</p>
+                    <p class="task-desc">${cleanDesc || "Tidak ada deskripsi."}</p>
                     ${lastProgressHtml}
                     
                     <div class="task-meta-row" style="margin-top: 12px;">

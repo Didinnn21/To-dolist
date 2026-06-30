@@ -37,6 +37,25 @@ document.addEventListener("DOMContentLoaded", async () => {
         deadlineInput.value = new Date().toISOString().split('T')[0];
     }
 
+    // Toggle Jurnal fields for desktop add task form
+    const taskCatInput = document.getElementById("task-category");
+    const journalFields = document.getElementById("journal-fields");
+    if (taskCatInput && journalFields) {
+        const toggleFields = () => {
+            if (taskCatInput.value && taskCatInput.value.toLowerCase() === "jurnal") {
+                journalFields.classList.remove("hidden");
+            } else {
+                journalFields.classList.add("hidden");
+                const u = document.getElementById("task-username");
+                const p = document.getElementById("task-password");
+                if (u) u.value = "";
+                if (p) p.value = "";
+            }
+        };
+        taskCatInput.addEventListener("input", toggleFields);
+        taskCatInput.addEventListener("change", toggleFields);
+    }
+
     // Render operations
     window.renderDashboardTasks = () => {
         const listContainer = document.getElementById("dashboard-task-list");
@@ -197,6 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Helper functions
     function createTaskCardHtml(task) {
+        const { description: cleanDesc, username, password } = DB.parseJournalCredentials(task.description);
         const assigneeId = typeof task.assignedTo === 'string' ? task.assignedTo : (Array.isArray(task.assignedTo) ? task.assignedTo[0] : '');
         const assignee = DB.users.find(u => u.id === assigneeId) || { name: "Tidak Dikenal", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" };
         const priorityClass = task.priority.toLowerCase();
@@ -261,9 +281,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <span class="tag tag-prio-${priorityClass}">Prioritas ${task.priority}</span>
                         <span class="tag tag-cat-generic">${task.category}</span>
                         <span class="tag tag-status-${task.status === 'Completed' ? 'completed' : 'running'}">${task.status === 'Completed' ? 'Selesai' : 'Berjalan'}</span>
+                        ${(username || password) ? `<span class="tag" style="background-color: #6366f1; color: white; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2.5" fill="none" style="margin-right: 2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Kredensial
+                        </span>` : ''}
                     </div>
                     <h4 class="task-title">${task.title}</h4>
-                    <p class="task-desc">${task.description || "Tidak ada deskripsi."}</p>
+                    <p class="task-desc">${cleanDesc || "Tidak ada deskripsi."}</p>
                     ${lastProgressHtml}
                     
                     <div class="task-meta-row" style="margin-top: 12px;">
@@ -457,6 +480,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             const category = document.getElementById("task-category").value;
             const deadline = document.getElementById("task-deadline").value;
 
+            const isJournal = category && category.toLowerCase() === "jurnal";
+            let finalDesc = description;
+            if (isJournal) {
+                const u = document.getElementById("task-username").value.trim();
+                const p = document.getElementById("task-password").value.trim();
+                finalDesc = DB.formatJournalDescription(description, u, p);
+            }
+
             // Single assignee from select
             let assignedTo;
             const singleSelect = document.getElementById("task-assignee");
@@ -490,7 +521,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const newTask = {
                 id: `tsk-${Date.now()}`,
                 title,
-                description,
+                description: finalDesc,
                 category,
                 deadline,
                 priority,
@@ -509,6 +540,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             e.target.reset();
+            const journalFields = document.getElementById("journal-fields");
+            if (journalFields) journalFields.classList.add("hidden");
             deadlineInput.value = new Date().toISOString().split('T')[0];
 
             renderDashboardTasks();

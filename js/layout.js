@@ -635,11 +635,24 @@ const Layout = {
                                     <option value="Desain">
                                     <option value="Pemasaran">
                                     <option value="Teknologi Informasi">
+                                    <option value="Jurnal">
                                 </datalist>
                             </div>
                             <div class="form-group col-6">
                                 <label for="task-deadline-mob">Deadline</label>
                                 <input type="date" id="task-deadline-mob" required>
+                            </div>
+                        </div>
+
+                        <!-- New Username and Password fields for Journal category -->
+                        <div class="form-row hidden" id="journal-fields-mob" style="margin-bottom: 18px;">
+                            <div class="form-group col-6" style="margin-bottom: 0;">
+                                <label for="task-username-mob">Username Jurnal</label>
+                                <input type="text" id="task-username-mob" placeholder="Masukkan username..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
+                            </div>
+                            <div class="form-group col-6" style="margin-bottom: 0;">
+                                <label for="task-password-mob">Password Jurnal</label>
+                                <input type="text" id="task-password-mob" placeholder="Masukkan password..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
                             </div>
                         </div>
 
@@ -725,6 +738,18 @@ const Layout = {
                             <div class="form-group col-6">
                                 <label for="edit-task-deadline">Deadline</label>
                                 <input type="date" id="edit-task-deadline" required>
+                            </div>
+                        </div>
+
+                        <!-- New Username and Password fields for Journal category -->
+                        <div class="form-row hidden" id="edit-journal-fields" style="margin-bottom: 18px;">
+                            <div class="form-group col-6" style="margin-bottom: 0;">
+                                <label for="edit-task-username">Username Jurnal</label>
+                                <input type="text" id="edit-task-username" placeholder="Masukkan username..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
+                            </div>
+                            <div class="form-group col-6" style="margin-bottom: 0;">
+                                <label for="edit-task-password">Password Jurnal</label>
+                                <input type="text" id="edit-task-password" placeholder="Masukkan password..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
                             </div>
                         </div>
 
@@ -1069,6 +1094,24 @@ const Layout = {
         if (btnShowAddTaskModal) btnShowAddTaskModal.addEventListener("click", openTaskModal);
 
         if (addTaskModalMobile) {
+            const taskCategoryMob = document.getElementById("task-category-mob");
+            const journalFieldsMob = document.getElementById("journal-fields-mob");
+            if (taskCategoryMob && journalFieldsMob) {
+                const toggleFields = () => {
+                    if (taskCategoryMob.value && taskCategoryMob.value.toLowerCase() === "jurnal") {
+                        journalFieldsMob.classList.remove("hidden");
+                    } else {
+                        journalFieldsMob.classList.add("hidden");
+                        const u = document.getElementById("task-username-mob");
+                        const p = document.getElementById("task-password-mob");
+                        if (u) u.value = "";
+                        if (p) p.value = "";
+                    }
+                };
+                taskCategoryMob.addEventListener("input", toggleFields);
+                taskCategoryMob.addEventListener("change", toggleFields);
+            }
+
             document.getElementById("close-task-modal-mobile").addEventListener("click", () => {
                 addTaskModalMobile.classList.add("hidden");
             });
@@ -1082,6 +1125,14 @@ const Layout = {
                 const description = document.getElementById("task-desc-mob").value.trim();
                 const category = document.getElementById("task-category-mob").value;
                 const deadline = document.getElementById("task-deadline-mob").value;
+
+                const isJournal = category && category.toLowerCase() === "jurnal";
+                let finalDesc = description;
+                if (isJournal) {
+                    const u = document.getElementById("task-username-mob").value.trim();
+                    const pVal = document.getElementById("task-password-mob").value.trim();
+                    finalDesc = DB.formatJournalDescription(description, u, pVal);
+                }
 
                 const isAdmin = Auth.currentUser.role === "Admin" || Auth.currentUser.role === "Project Manager";
                 let assignedTo = document.getElementById("task-assignee-mob")
@@ -1115,7 +1166,7 @@ const Layout = {
                 const newTask = {
                     id: `tsk-${Date.now()}`,
                     title,
-                    description,
+                    description: finalDesc,
                     category,
                     deadline,
                     priority,
@@ -1134,6 +1185,7 @@ const Layout = {
                 }
 
                 e.target.reset();
+                if (journalFieldsMob) journalFieldsMob.classList.add("hidden");
                 addTaskModalMobile.classList.add("hidden");
 
                 // Refresh dashboard or task list
@@ -1153,6 +1205,21 @@ const Layout = {
             });
             taskDetailModal.addEventListener("click", (e) => {
                 if (e.target === taskDetailModal) taskDetailModal.classList.add("hidden");
+            });
+
+            // Clipboard Copy for Jurnal Credentials
+            taskDetailModal.addEventListener("click", (e) => {
+                const copyBtn = e.target.closest(".btn-copy-cred");
+                if (copyBtn) {
+                    const text = copyBtn.getAttribute("data-copy");
+                    if (text) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            window.showToast("Berhasil disalin ke clipboard!", "success");
+                        }).catch(err => {
+                            console.error("Gagal menyalin:", err);
+                        });
+                    }
+                }
             });
 
             // Attachment upload — kirim ke Supabase via API (bukan base64 lokal)
@@ -1311,6 +1378,24 @@ const Layout = {
         // Edit Task Modal Handlers
         const editTaskModal = document.getElementById("edit-task-modal");
         if (editTaskModal) {
+            const editCatInput = document.getElementById("edit-task-category");
+            const editJournalFields = document.getElementById("edit-journal-fields");
+            if (editCatInput && editJournalFields) {
+                const toggleEditJournalFields = () => {
+                    if (editCatInput.value && editCatInput.value.toLowerCase() === "jurnal") {
+                        editJournalFields.classList.remove("hidden");
+                    } else {
+                        editJournalFields.classList.add("hidden");
+                        const u = document.getElementById("edit-task-username");
+                        const p = document.getElementById("edit-task-password");
+                        if (u) u.value = "";
+                        if (p) p.value = "";
+                    }
+                };
+                editCatInput.addEventListener("input", toggleEditJournalFields);
+                editCatInput.addEventListener("change", toggleEditJournalFields);
+            }
+
             document.getElementById("close-edit-task-modal").addEventListener("click", () => {
                 editTaskModal.classList.add("hidden");
             });
@@ -1325,6 +1410,14 @@ const Layout = {
                 const description = document.getElementById("edit-task-desc").value.trim();
                 const category = document.getElementById("edit-task-category").value;
                 const deadline = document.getElementById("edit-task-deadline").value;
+
+                const isJournal = category && category.toLowerCase() === "jurnal";
+                let finalDesc = description;
+                if (isJournal) {
+                    const u = document.getElementById("edit-task-username").value.trim();
+                    const p = document.getElementById("edit-task-password").value.trim();
+                    finalDesc = DB.formatJournalDescription(description, u, p);
+                }
 
                 const isAdmin = Auth.currentUser.role === "Admin" || Auth.currentUser.role === "Project Manager";
                 let assignedTo = document.getElementById("edit-task-assignee").value || Auth.currentUser.id;
@@ -1345,7 +1438,7 @@ const Layout = {
                 const originalTask = DB.tasks.find(t => t.id === taskId);
                 const updatedData = {
                     title,
-                    description,
+                    description: finalDesc,
                     category,
                     deadline,
                     priority,
@@ -1383,11 +1476,29 @@ const Layout = {
                 return;
             }
 
+            const { description: cleanDesc, username, password } = DB.parseJournalCredentials(task.description);
+            const isJournal = task.category && task.category.toLowerCase() === "jurnal";
+
             document.getElementById("edit-task-id").value = task.id;
             document.getElementById("edit-task-name").value = task.title;
-            document.getElementById("edit-task-desc").value = task.description || "";
+            document.getElementById("edit-task-desc").value = cleanDesc || "";
             document.getElementById("edit-task-category").value = task.category;
             document.getElementById("edit-task-deadline").value = task.deadline;
+
+            const editJournalFields = document.getElementById("edit-journal-fields");
+            const editUsername = document.getElementById("edit-task-username");
+            const editPassword = document.getElementById("edit-task-password");
+            if (editJournalFields && editUsername && editPassword) {
+                if (isJournal) {
+                    editJournalFields.classList.remove("hidden");
+                    editUsername.value = username || "";
+                    editPassword.value = password || "";
+                } else {
+                    editJournalFields.classList.add("hidden");
+                    editUsername.value = "";
+                    editPassword.value = "";
+                }
+            }
 
             // Single assignee: set select value
             const taskAssignee = typeof task.assignedTo === 'string'
@@ -1445,6 +1556,8 @@ const Layout = {
                     }
                 }
 
+                const { description: cleanDesc, username, password } = DB.parseJournalCredentials(task.description);
+
                 meta.innerHTML = `
                     <div class="task-detail-info-grid">
                         <div class="detail-info-item">
@@ -1467,9 +1580,27 @@ const Layout = {
                             <span class="detail-label">Anggota Tim</span>
                             <span>${assigneeName || '-'}</span>
                         </div>
-                        ${task.description ? `<div class="detail-info-item" style="grid-column: span 2;">
+                        ${username ? `<div class="detail-info-item">
+                            <span class="detail-label">Username Jurnal</span>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${username}</span>
+                                <button class="btn-copy-cred" data-copy="${username}" style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; padding: 2px;" title="Salin Username">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                        </div>` : ''}
+                        ${password ? `<div class="detail-info-item">
+                            <span class="detail-label">Password Jurnal</span>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${password}</span>
+                                <button class="btn-copy-cred" data-copy="${password}" style="background: none; border: none; cursor: pointer; color: var(--text-muted); display: inline-flex; align-items: center; padding: 2px;" title="Salin Password">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                        </div>` : ''}
+                        ${cleanDesc ? `<div class="detail-info-item" style="grid-column: span 2;">
                             <span class="detail-label">Deskripsi</span>
-                            <p style="margin:4px 0 0; color: var(--text-secondary); line-height: 1.5;">${task.description}</p>
+                            <p style="margin:4px 0 0; color: var(--text-secondary); line-height: 1.5;">${cleanDesc}</p>
                         </div>` : ''}
                     </div>
                 `;

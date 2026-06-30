@@ -58,6 +58,35 @@ const DB = {
         }
     },
 
+    // Parse credentials from description
+    parseJournalCredentials(description) {
+        if (!description) return { description: "", username: "", password: "" };
+        const marker = "\n\n--- Jurnal Credentials ---\n";
+        const idx = description.indexOf(marker);
+        if (idx === -1) {
+            return { description, username: "", password: "" };
+        }
+        const cleanDesc = description.substring(0, idx);
+        const credsStr = description.substring(idx + marker.length);
+        const lines = credsStr.split("\n");
+        let username = "";
+        let password = "";
+        for (const line of lines) {
+            if (line.startsWith("Username: ")) {
+                username = line.substring("Username: ".length);
+            } else if (line.startsWith("Password: ")) {
+                password = line.substring("Password: ".length);
+            }
+        }
+        return { description: cleanDesc, username, password };
+    },
+
+    // Format description with credentials
+    formatJournalDescription(description, username, password) {
+        if (!username && !password) return description;
+        return `${description}\n\n--- Jurnal Credentials ---\nUsername: ${username}\nPassword: ${password}`;
+    },
+
     // ── INIT: Ambil semua data dari Express API ───────────────────────────────
     async init() {
         // Tunggu Auth.init() selesai dulu (cegah race condition)
@@ -453,6 +482,32 @@ const DB = {
             });
         } catch (err) {
             console.error('Gagal update nama user:', err.message);
+            throw err;
+        }
+    },
+
+    async updateUserProfile(userId, profileData) {
+        this._invalidateCache();
+        const user = this.users.find(u => u.id === userId);
+        if (user) {
+            if (profileData.name !== undefined) user.name = profileData.name;
+            if (profileData.npwp !== undefined) user.npwp = profileData.npwp;
+            if (profileData.cv_url !== undefined) user.cv_url = profileData.cv_url;
+            if (profileData.portfolio_url !== undefined) user.portfolio_url = profileData.portfolio_url;
+            if (profileData.address !== undefined) user.address = profileData.address;
+            if (profileData.gender !== undefined) user.gender = profileData.gender;
+            if (profileData.bank_account !== undefined) user.bank_account = profileData.bank_account;
+            if (profileData.ktp_url !== undefined) user.ktp_url = profileData.ktp_url;
+        }
+
+        try {
+            const data = await this._fetch(`/users/${userId}`, {
+                method: 'PUT',
+                body: JSON.stringify(profileData)
+            });
+            return data.user;
+        } catch (err) {
+            console.error('Gagal memperbarui profil:', err.message);
             throw err;
         }
     },

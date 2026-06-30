@@ -43,7 +43,7 @@ router.post('/login', async (req, res, next) => {
         // 2. Ambil data user lengkap dari wf_users
         const { data: userRecord, error: userError } = await supabase
             .from('wf_users')
-            .select('id, name, email, role, avatar, status')
+            .select('id, name, email, role, avatar, status, npwp, cv_url, portfolio_url, address, gender, bank_account, ktp_url')
             .eq('id', data.session.user.id)
             .single();
 
@@ -83,7 +83,14 @@ router.post('/login', async (req, res, next) => {
                 email: userRecord.email,
                 role: userRecord.role,
                 avatar: userRecord.avatar,
-                status: userRecord.status
+                status: userRecord.status,
+                npwp: userRecord.npwp || '',
+                cv_url: userRecord.cv_url || '',
+                portfolio_url: userRecord.portfolio_url || '',
+                address: userRecord.address || '',
+                gender: userRecord.gender || '',
+                bank_account: userRecord.bank_account || '',
+                ktp_url: userRecord.ktp_url || ''
             }
         });
     } catch (err) {
@@ -98,7 +105,7 @@ router.get('/me', requireAuth, async (req, res, next) => {
         // Fetch fresh dari database untuk memastikan data terbaru
         const { data: userRecord, error } = await supabase
             .from('wf_users')
-            .select('id, name, email, role, avatar, status')
+            .select('id, name, email, role, avatar, status, npwp, cv_url, portfolio_url, address, gender, bank_account, ktp_url')
             .eq('id', req.user.id)
             .single();
 

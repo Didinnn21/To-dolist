@@ -19,7 +19,7 @@ router.get('/', requireAuth, async (req, res, next) => {
     try {
         const { data, error } = await supabase
             .from('wf_users')
-            .select('id, name, email, role, avatar, status')
+            .select('id, name, email, role, avatar, status, npwp, cv_url, portfolio_url, address, gender, bank_account, ktp_url')
             .order('name');
 
         if (error) throw error;
@@ -94,7 +94,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res, next) => {
 // ── PUT /api/users/:id ────────────────────────────────────────────────────
 router.put('/:id', requireAuth, async (req, res, next) => {
     try {
-        const { name, role } = req.body;
+        const { name, role, npwp, cv_url, portfolio_url, address, gender, bank_account, ktp_url } = req.body;
         const isAdmin = ['Admin', 'Project Manager'].includes(req.user.role);
 
         // User hanya bisa edit diri sendiri, Admin bisa edit siapa saja
@@ -105,12 +105,19 @@ router.put('/:id', requireAuth, async (req, res, next) => {
         const updateData = {};
         if (name !== undefined) updateData.name = name;
         if (role !== undefined && isAdmin) updateData.role = role; // hanya admin yang bisa ubah role
+        if (npwp !== undefined) updateData.npwp = npwp;
+        if (cv_url !== undefined) updateData.cv_url = cv_url;
+        if (portfolio_url !== undefined) updateData.portfolio_url = portfolio_url;
+        if (address !== undefined) updateData.address = address;
+        if (gender !== undefined) updateData.gender = gender;
+        if (bank_account !== undefined) updateData.bank_account = bank_account;
+        if (ktp_url !== undefined) updateData.ktp_url = ktp_url;
 
         const { data, error } = await supabase
             .from('wf_users')
             .update(updateData)
             .eq('id', req.params.id)
-            .select('id, name, email, role, avatar, status')
+            .select('id, name, email, role, avatar, status, npwp, cv_url, portfolio_url, address, gender, bank_account, ktp_url')
             .single();
 
         if (error) throw error;

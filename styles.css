@@ -1859,3 +1859,129 @@ body.dark-theme {
 .text-success { color: var(--success) !important; }
 .text-primary { color: var(--brand) !important; }
 
+/* ── 23. AVATAR USER TOOLTIP ────────────────────────────────────────────── */
+.avatar-tooltip-container {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.avatar-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  width: 240px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-lg);
+  padding: 12px;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, visibility 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+  text-align: left;
+  line-height: 1.4;
+}
+
+/* Arrow pointer to the left */
+.avatar-tooltip::after {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent var(--border) transparent transparent;
+}
+
+.avatar-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent var(--bg-card) transparent transparent;
+  z-index: 1;
+}
+
+.avatar-tooltip-container:hover .avatar-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+.avatar-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.tooltip-avatar-img {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  margin: 0 !important;
+  border: 1.5px solid var(--border) !important;
+}
+
+.tooltip-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tooltip-user-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.tooltip-user-role {
+  font-size: 0.75rem;
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.avatar-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tooltip-info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  gap: 8px;
+}
+
+.tooltip-info-label {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.tooltip-info-val {
+  color: var(--text-secondary);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.tooltip-status-active {
+  color: var(--success);
+}
+
+.tooltip-status-inactive {
+  color: var(--danger);
+}
+

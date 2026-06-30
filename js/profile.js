@@ -31,6 +31,53 @@ document.addEventListener("DOMContentLoaded", async () => {
             else if (user.role === "Project Manager") roleBadge.classList.add("role-pm");
             else roleBadge.classList.add("role-staff");
         }
+
+        const npwpInput = document.getElementById("settings-npwp-input");
+        if (npwpInput) npwpInput.value = user.npwp || "";
+
+        const bankAccountInput = document.getElementById("settings-bank-account-input");
+        if (bankAccountInput) bankAccountInput.value = user.bank_account || "";
+
+        const portfolioInput = document.getElementById("settings-portfolio-input");
+        if (portfolioInput) portfolioInput.value = user.portfolio_url || "";
+
+        const genderSelect = document.getElementById("settings-gender-select");
+        if (genderSelect) genderSelect.value = user.gender || "";
+
+        const addressTextarea = document.getElementById("settings-address-textarea");
+        if (addressTextarea) addressTextarea.value = user.address || "";
+
+        const cvFileInfo = document.getElementById("cv-file-info");
+        const cvPreviewContainer = document.getElementById("cv-preview-container");
+        const cvPreviewLink = document.getElementById("cv-preview-link");
+
+        if (user.cv_url) {
+            if (cvFileInfo) {
+                const fileName = user.cv_url.split('/').pop();
+                cvFileInfo.textContent = decodeURIComponent(fileName);
+            }
+            if (cvPreviewContainer) cvPreviewContainer.style.display = "block";
+            if (cvPreviewLink) cvPreviewLink.href = user.cv_url;
+        } else {
+            if (cvFileInfo) cvFileInfo.textContent = "Belum ada file diunggah";
+            if (cvPreviewContainer) cvPreviewContainer.style.display = "none";
+        }
+
+        const ktpFileInfo = document.getElementById("ktp-file-info");
+        const ktpPreviewContainer = document.getElementById("ktp-preview-container");
+        const ktpPreviewLink = document.getElementById("ktp-preview-link");
+
+        if (user.ktp_url) {
+            if (ktpFileInfo) {
+                const fileName = user.ktp_url.split('/').pop();
+                ktpFileInfo.textContent = decodeURIComponent(fileName);
+            }
+            if (ktpPreviewContainer) ktpPreviewContainer.style.display = "block";
+            if (ktpPreviewLink) ktpPreviewLink.href = user.ktp_url;
+        } else {
+            if (ktpFileInfo) ktpFileInfo.textContent = "Belum ada file diunggah";
+            if (ktpPreviewContainer) ktpPreviewContainer.style.display = "none";
+        }
     };
 
     // Change Avatar logic
@@ -74,50 +121,164 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Save Name logic
-    const btnSaveName = document.getElementById("btn-save-name");
-    const nameInput = document.getElementById("settings-name-input");
-    if (btnSaveName && nameInput) {
-        btnSaveName.addEventListener("click", async () => {
-            const newName = nameInput.value.trim();
-            if (!newName) {
-                if (window.showToast) {
-                    window.showToast("Nama tidak boleh kosong!", "error");
-                } else {
-                    alert("Nama tidak boleh kosong!");
+    // CV Upload Logic
+    const cvFileInput = document.getElementById("cv-file-input");
+    const cvFileInfo = document.getElementById("cv-file-info");
+    const cvPreviewContainer = document.getElementById("cv-preview-container");
+    const cvPreviewLink = document.getElementById("cv-preview-link");
+    let uploadedCvUrl = Auth.currentUser ? Auth.currentUser.cv_url || "" : "";
+
+    if (cvFileInput) {
+        cvFileInput.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    if (window.showToast) window.showToast("Ukuran file terlalu besar! Maksimal 10MB.", "error");
+                    else alert("Ukuran file terlalu besar! Maksimal 10MB.");
+                    return;
                 }
+
+                if (cvFileInfo) cvFileInfo.textContent = "Mengunggah...";
+
+                try {
+                    const uploaded = await DB.uploadFiles([file]);
+                    if (uploaded && uploaded.length > 0) {
+                        uploadedCvUrl = uploaded[0].url;
+                        if (cvFileInfo) cvFileInfo.textContent = file.name;
+                        if (cvPreviewContainer) cvPreviewContainer.style.display = "block";
+                        if (cvPreviewLink) cvPreviewLink.href = uploadedCvUrl;
+                        if (window.showToast) window.showToast("CV berhasil diunggah! Silakan klik 'Simpan Perubahan Profil' untuk menyimpan data.", "success");
+                    } else {
+                        if (cvFileInfo) cvFileInfo.textContent = "Gagal mengunggah file";
+                        if (window.showToast) window.showToast("Gagal mengunggah CV.", "error");
+                    }
+                } catch (err) {
+                    console.error("Gagal unggah CV:", err);
+                    if (cvFileInfo) cvFileInfo.textContent = "Error";
+                    if (window.showToast) window.showToast("Gagal mengunggah CV: " + err.message, "error");
+                }
+            }
+        });
+    }
+
+    // KTP Upload Logic
+    const ktpFileInput = document.getElementById("ktp-file-input");
+    const ktpFileInfo = document.getElementById("ktp-file-info");
+    const ktpPreviewContainer = document.getElementById("ktp-preview-container");
+    const ktpPreviewLink = document.getElementById("ktp-preview-link");
+    let uploadedKtpUrl = Auth.currentUser ? Auth.currentUser.ktp_url || "" : "";
+
+    if (ktpFileInput) {
+        ktpFileInput.addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                    if (window.showToast) window.showToast("Ukuran file terlalu besar! Maksimal 10MB.", "error");
+                    else alert("Ukuran file terlalu besar! Maksimal 10MB.");
+                    return;
+                }
+
+                if (ktpFileInfo) ktpFileInfo.textContent = "Mengunggah...";
+
+                try {
+                    const uploaded = await DB.uploadFiles([file]);
+                    if (uploaded && uploaded.length > 0) {
+                        uploadedKtpUrl = uploaded[0].url;
+                        if (ktpFileInfo) ktpFileInfo.textContent = file.name;
+                        if (ktpPreviewContainer) ktpPreviewContainer.style.display = "block";
+                        if (ktpPreviewLink) ktpPreviewLink.href = uploadedKtpUrl;
+                        if (window.showToast) window.showToast("Foto KTP berhasil diunggah! Silakan klik 'Simpan Perubahan Profil' untuk menyimpan data.", "success");
+                    } else {
+                        if (ktpFileInfo) ktpFileInfo.textContent = "Gagal mengunggah file";
+                        if (window.showToast) window.showToast("Gagal mengunggah Foto KTP.", "error");
+                    }
+                } catch (err) {
+                    console.error("Gagal unggah KTP:", err);
+                    if (ktpFileInfo) ktpFileInfo.textContent = "Error";
+                    if (window.showToast) window.showToast("Gagal mengunggah Foto KTP: " + err.message, "error");
+                }
+            }
+        });
+    }
+
+    // Save Profile Logic
+    const btnSaveProfile = document.getElementById("btn-save-profile");
+    const nameInput = document.getElementById("settings-name-input");
+    const npwpInput = document.getElementById("settings-npwp-input");
+    const bankAccountInput = document.getElementById("settings-bank-account-input");
+    const portfolioInput = document.getElementById("settings-portfolio-input");
+    const genderSelect = document.getElementById("settings-gender-select");
+    const addressTextarea = document.getElementById("settings-address-textarea");
+
+    if (btnSaveProfile && nameInput) {
+        btnSaveProfile.addEventListener("click", async () => {
+            const newName = nameInput.value.trim();
+            const newNpwp = npwpInput ? npwpInput.value.trim() : "";
+            const newBankAccount = bankAccountInput ? bankAccountInput.value.trim() : "";
+            const newPortfolio = portfolioInput ? portfolioInput.value.trim() : "";
+            const newGender = genderSelect ? genderSelect.value : "";
+            const newAddress = addressTextarea ? addressTextarea.value.trim() : "";
+
+            if (!newName) {
+                if (window.showToast) window.showToast("Nama tidak boleh kosong!", "error");
+                else alert("Nama tidak boleh kosong!");
                 return;
             }
 
-            const currentUser = Auth.currentUser;
-            if (currentUser) {
-                currentUser.name = newName;
-                await DB.updateUserName(currentUser.id, newName);
-                // Update cache dengan key yang benar
-                localStorage.setItem("dzhirasena_user_cache", JSON.stringify(currentUser));
+            btnSaveProfile.innerText = "Menyimpan...";
+            btnSaveProfile.disabled = true;
 
-                // Update UI text labels in real-time
-                const nameText = document.getElementById("settings-name");
-                if (nameText) nameText.textContent = newName;
+            try {
+                const currentUser = Auth.currentUser;
+                if (currentUser) {
+                    const profileData = {
+                        name: newName,
+                        npwp: newNpwp,
+                        bank_account: newBankAccount,
+                        portfolio_url: newPortfolio,
+                        gender: newGender,
+                        address: newAddress,
+                        cv_url: uploadedCvUrl,
+                        ktp_url: uploadedKtpUrl
+                    };
 
-                const sidebarName = document.querySelector(".profile-info h4");
-                if (sidebarName) sidebarName.textContent = newName;
+                    const updatedUser = await DB.updateUserProfile(currentUser.id, profileData);
+                    
+                    // Sync Auth.currentUser and cache
+                    Object.assign(currentUser, updatedUser);
+                    localStorage.setItem("dzhirasena_user_cache", JSON.stringify(currentUser));
 
-                const dropdownName = document.querySelector("#profile-dropdown strong");
-                if (dropdownName) dropdownName.textContent = newName;
+                    // Update UI elements
+                    const nameText = document.getElementById("settings-name");
+                    if (nameText) nameText.textContent = currentUser.name;
 
-                if (window.showToast) {
-                    window.showToast("Nama berhasil diperbarui!", "success");
+                    const sidebarName = document.querySelector(".profile-info h4");
+                    if (sidebarName) sidebarName.textContent = currentUser.name;
+
+                    const dropdownName = document.querySelector("#profile-dropdown strong");
+                    if (dropdownName) dropdownName.textContent = currentUser.name;
+
+                    if (window.showToast) window.showToast("Profil berhasil diperbarui!", "success");
                 }
+            } catch (err) {
+                console.error("Gagal memperbarui profil:", err);
+                if (window.showToast) window.showToast("Gagal memperbarui profil: " + err.message, "error");
+            } finally {
+                btnSaveProfile.innerText = "Simpan Perubahan Profil";
+                btnSaveProfile.disabled = false;
             }
         });
 
-        nameInput.addEventListener("keydown", (e) => {
+        const handleEnterKey = (e) => {
             if (e.key === "Enter") {
                 e.preventDefault();
-                btnSaveName.click();
+                btnSaveProfile.click();
             }
-        });
+        };
+        nameInput.addEventListener("keydown", handleEnterKey);
+        if (npwpInput) npwpInput.addEventListener("keydown", handleEnterKey);
+        if (bankAccountInput) bankAccountInput.addEventListener("keydown", handleEnterKey);
+        if (portfolioInput) portfolioInput.addEventListener("keydown", handleEnterKey);
     }
 
     // Toggle Password Visibility

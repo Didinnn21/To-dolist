@@ -60,7 +60,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         archiveList.innerHTML = paginatedItems.map(item => {
             // Render Normal Task Card
-            const assignee = DB.users.find(u => u.id === item.assignedTo) || { name: "Tidak Dikenal", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" };
+            const assigneeId = typeof item.assignedTo === 'string' ? item.assignedTo : (Array.isArray(item.assignedTo) ? item.assignedTo[0] : '');
+            const assignee = DB.users.find(u => u.id === assigneeId) || { name: "Tidak Dikenal", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" };
             const priorityClass = item.priority.toLowerCase();
             const canDelete = (Auth.currentUser.role === "Admin" || Auth.currentUser.role === "Project Manager") || item.createdBy === Auth.currentUser.id;
 
@@ -84,7 +85,28 @@ document.addEventListener("DOMContentLoaded", async () => {
                             </span>
                         </div>
                         <div class="task-assignee-avatar" style="margin-top: 10px;">
-                            <img src="${assignee.avatar}" alt="${assignee.name}" title="Ditugaskan kepada: ${assignee.name}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border-color);">
+                            <div class="avatar-tooltip-container">
+                                <img src="${assignee.avatar}" alt="${assignee.name}" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border-color);">
+                                <div class="avatar-tooltip">
+                                    <div class="avatar-tooltip-header">
+                                        <img src="${assignee.avatar}" alt="${assignee.name}" class="tooltip-avatar-img">
+                                        <div class="tooltip-user-info">
+                                            <div class="tooltip-user-name">${assignee.name}</div>
+                                            <div class="tooltip-user-role">${assignee.role || 'Staff'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="avatar-tooltip-body">
+                                        <div class="tooltip-info-item">
+                                            <span class="tooltip-info-label">Email</span>
+                                            <span class="tooltip-info-val">${assignee.email || '-'}</span>
+                                        </div>
+                                        <div class="tooltip-info-item">
+                                            <span class="tooltip-info-label">Status</span>
+                                            <span class="tooltip-info-val tooltip-status-${(assignee.status || 'Active').toLowerCase()}">${assignee.status || 'Active'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="task-actions-col">

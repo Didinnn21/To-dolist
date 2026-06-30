@@ -18,36 +18,40 @@ const Auth = {
             return;
         }
 
-        // Verifikasi token masih valid dengan memanggil /api/auth/me
-        try {
-            const res = await fetch('/api/auth/me', {
-                headers: { 'Authorization': `Bearer ${savedToken}` }
-            });
-
-            if (res.ok) {
-                const data = await res.json();
+        // Load optimistically from local cache so the page renders instantly
+        const cachedUser = localStorage.getItem('dzhirasena_user_cache');
+        if (cachedUser) {
+            try {
+                this.currentUser = JSON.parse(cachedUser);
                 this.token = savedToken;
-                this.currentUser = data.user;
-            } else {
-                // Token expired atau tidak valid
-                this._clearSession();
-            }
-        } catch (err) {
-            console.warn('Tidak dapat memverifikasi token (server mungkin offline):', err.message);
-            // Fallback: coba baca dari cache lokal agar tidak langsung logout
-            const cachedUser = localStorage.getItem('dzhirasena_user_cache');
-            if (cachedUser) {
-                try {
-                    this.currentUser = JSON.parse(cachedUser);
-                    this.token = savedToken;
-                    console.warn('Menggunakan cache user lokal (mode offline).');
-                } catch {
-                    this._clearSession();
-                }
-            } else {
-                this._clearSession();
+            } catch (e) {
+                // Ignore parse error, background verify will handle it
             }
         }
+
+        // Run verification in the background (non-blocking)
+        (async () => {
+            try {
+                const res = await fetch('/api/auth/me', {
+                    headers: { 'Authorization': `Bearer ${savedToken}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    this.token = savedToken;
+                    this.currentUser = data.user;
+                    localStorage.setItem('dzhirasena_user_cache', JSON.stringify(data.user));
+                } else {
+                    // Token expired or invalid -> clear session and redirect to login
+                    this._clearSession();
+                    window.location.href = 'index.html';
+                }
+            } catch (err) {
+                console.warn('Tidak dapat memverifikasi token (server mungkin offline):', err.message);
+                // Keep local cache if server is offline
+            }
+            this.protectRoutes();
+        })();
 
         this.protectRoutes();
     },
