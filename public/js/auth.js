@@ -4,8 +4,8 @@
 // JWT = Supabase access_token yang disimpan di localStorage
 // ==========================================================================
 
-const SUPABASE_URL  = 'https://wrcenmpkawyovpsuwbaz.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyY2VubXBrYXd5b3Zwc3V3YmF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzExNTgsImV4cCI6MjA5NzEwNzE1OH0.4gQMXu49zKleA9LAV8MsGFcKvVETiCrU-Mc-lAk5Vx4';
+if (typeof SUPABASE_URL  === 'undefined') var SUPABASE_URL  = 'https://wrcenmpkawyovpsuwbaz.supabase.co';
+if (typeof SUPABASE_ANON === 'undefined') var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndyY2VubXBrYXd5b3Zwc3V3YmF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MzExNTgsImV4cCI6MjA5NzEwNzE1OH0.4gQMXu49zKleA9LAV8MsGFcKvVETiCrU-Mc-lAk5Vx4';
 
 const Auth = {
     currentUser: null,
