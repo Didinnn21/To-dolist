@@ -121,8 +121,6 @@
                 </div>
             </div>
         </section>
-    </div>
-
     <!-- Edit User Modal -->
     <div id="edit-user-modal" class="modal-overlay hidden">
         <div class="modal-content">
