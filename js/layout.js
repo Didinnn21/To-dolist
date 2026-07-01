@@ -1661,8 +1661,8 @@ const Layout = {
                         // Fallback ke att.data (base64) untuk file lama
                         let fileHref = '#';
                         if (att.url && att.url.startsWith('http')) {
-                            // Proxy via backend — memastikan content-type & binary benar, dengan token auth
-                            fileHref = `/api/upload/download?url=${encodeURIComponent(att.url)}&name=${encodeURIComponent(att.name)}&token=${encodeURIComponent(Auth.token || '')}`;
+                            // Gunakan URL langsung ke Supabase Storage (yang sudah public)
+                            fileHref = att.url + '?download=' + encodeURIComponent(att.name);
                         } else if (att.data) {
                             fileHref = att.data;
                         }
