@@ -1,59 +1,69 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# To-Do List & Team Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web komprehensif untuk mengelola daftar tugas (To-Do List), manajemen anggota tim, dan perhitungan laporan honorarium berbasis penyelesaian tugas. Aplikasi ini dibangun dengan antarmuka yang modern, responsif, dan mendukung mode Gelap/Terang (Dark/Light Mode).
 
-## About Laravel
+## 🚀 Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Manajemen Tugas (To-Do List)**: Tambah, edit, hapus, dan ubah status tugas dengan mudah.
+- **Manajemen Tim**: Kelola anggota tim, peran (Admin/User), dan status aktif/non-aktif.
+- **Laporan Honor**: Sistem otomatis untuk menghitung honor/gaji anggota tim berdasarkan jumlah tugas yang diselesaikan.
+- **Dashboard Analitik**: Ringkasan data (metrik) pengguna, tugas selesai, dan statistik lainnya secara visual.
+- **Responsif & Modern**: Tampilan (UI) berbentuk kartu (card) bergaya *glassmorphism* yang elegan, berfungsi dengan baik di Desktop, Tablet, maupun Smartphone.
+- **Tema Terang/Gelap**: Mendukung pergantian otomatis atau manual untuk Light Mode dan Dark Mode.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ Teknologi yang Digunakan
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Frontend**: HTML5, Vanilla CSS, Vanilla JavaScript
+- **Backend / Routing**: [Laravel](https://laravel.com/)
+- **Deployment**: [Vercel](https://vercel.com/) (Dikonfigurasi via `vercel.json`)
 
-## Learning Laravel
+## 💻 Cara Menjalankan di Komputer Lokal (Localhost)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Karena proyek ini menggunakan framework Laravel, pastikan Anda sudah menginstal **PHP** dan **Composer** di komputer Anda.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Clone repository ini**
+   ```bash
+   git clone https://github.com/USERNAME/To-dolist.git
+   cd To-dolist
+   ```
 
-## Laravel Sponsors
+2. **Instal dependensi (Composer)**
+   ```bash
+   composer install
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+3. **Salin file Environment**
+   ```bash
+   cp .env.example .env
+   ```
 
-### Premium Partners
+4. **Generate Application Key**
+   ```bash
+   php artisan key:generate
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+5. **Jalankan Server Lokal**
+   ```bash
+   php artisan serve
+   ```
+   *Aplikasi akan berjalan di `http://localhost:8000` atau `http://127.0.0.1:8000`*
 
-## Contributing
+## 🌐 Cara Deployment ke Vercel
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Proyek ini sudah dilengkapi dengan file `vercel.json` sehingga sangat mudah untuk di-deploy secara gratis menggunakan Vercel.
 
-## Code of Conduct
+1. Login ke akun [Vercel](https://vercel.com).
+2. Buat proyek baru dan impor repository GitHub ini.
+3. Vercel akan otomatis membaca file `vercel.json` dan mengatur routing untuk PHP dan file statis (CSS/JS) di folder `public/`.
+4. Klik **Deploy** dan tunggu proses build selesai.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📁 Struktur Direktori Penting
 
-## Security Vulnerabilities
+- `public/css/` - Berisi file `styles.css` utama untuk seluruh UI.
+- `public/js/` - Berisi logika interaktif di sisi klien (seperti `auth.js`, `dashboard.js`, `team.js`, dll).
+- `resources/views/` - Berisi file Blade HTML yang merender antarmuka pengguna.
+- `routes/web.php` - Berisi pengaturan rute antar halaman.
+- `_archive/` & `scripts/` - Folder tempat menyimpan arsip arsitektur lama dan skrip utilitas.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Dibuat untuk memudahkan produktivitas tim secara efisien.*
