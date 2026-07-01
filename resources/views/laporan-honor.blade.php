@@ -14,7 +14,7 @@
     <style>
         /* ── Mobile/Tablet Report switcher tabs ── */
         .report-switcher-tabs {
-            display: none;
+            display: flex;
             margin-bottom: 20px;
             border-bottom: 1.5px solid var(--border);
             gap: 16px;
@@ -46,12 +46,6 @@
             height: 3px;
             background: var(--brand);
             border-radius: 99px;
-        }
-        
-        @media (max-width: 1024px) {
-            .report-switcher-tabs {
-                display: flex;
-            }
         }
     </style>
 </head>

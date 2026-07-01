@@ -325,20 +325,11 @@ const Layout = {
                                 <span>Bayar Honor</span>
                             </a>
                         </li>
-                        <li class="nav-item has-submenu ${activeView === 'laporan' || activeView === 'laporanHonor' ? 'active' : ''}">
-                            <a href="#" class="submenu-toggle">
+                        <li class="nav-item ${activeView === 'laporan' || activeView === 'laporanHonor' ? 'active' : ''}" data-view="laporan">
+                            <a href="#">
                                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                                 <span>Laporan</span>
-                                <svg class="submenu-arrow" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="margin-left:auto; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </a>
-                            <ul class="sidebar-submenu">
-                                <li class="submenu-item ${activeView === 'laporan' ? 'active' : ''}" data-view="laporan">
-                                    <a href="#">Laporan Kinerja Karyawan</a>
-                                </li>
-                                <li class="submenu-item ${activeView === 'laporanHonor' ? 'active' : ''}" data-view="laporanHonor">
-                                    <a href="#">Laporan Honor</a>
-                                </li>
-                            </ul>
                         </li>
                         ` : (isAdmin ? `
                         <li class="nav-item ${activeView === 'laporan' ? 'active' : ''}" data-view="laporan">
