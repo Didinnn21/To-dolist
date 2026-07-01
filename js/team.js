@@ -236,7 +236,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Hydrate Tasks
         const tasksList = document.getElementById("detail-user-tasks-list");
-        const userTasks = DB.tasks.filter(t => t.assignedTo === userId);
+        const userTasks = DB.tasks.filter(t => {
+            const assigned = t.assignedTo;
+            if (Array.isArray(assigned)) return assigned.includes(userId);
+            return assigned === userId;
+        });
+
 
         if (userTasks.length === 0) {
             tasksList.innerHTML = `<p style="font-size: 12px; color: var(--text-muted); text-align: center; margin: 20px 0;">Belum ada tugas yang ditugaskan kepada karyawan ini.</p>`;

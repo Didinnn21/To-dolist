@@ -232,14 +232,14 @@ const Layout = {
         // Determine active view based on current HTML file
         const path = window.location.pathname.toLowerCase();
         let activeView = "dashboard";
-        if (path.endsWith("tasks.html")) activeView = "tasks";
-        else if (path.endsWith("team.html")) activeView = "team";
-        else if (path.endsWith("archive.html")) activeView = "archive";
-        else if (path.endsWith("archive-paid.html")) activeView = "archivePaid";
-        else if (path.endsWith("profile.html")) activeView = "profile";
-        else if (path.endsWith("laporan.html")) activeView = "laporan";
-        else if (path.endsWith("laporan-honor.html")) activeView = "laporanHonor";
-        else if (path.endsWith("honor.html")) activeView = "honor";
+        if (path.endsWith("tasks") || path.endsWith("tasks.html")) activeView = "tasks";
+        else if (path.endsWith("team") || path.endsWith("team.html")) activeView = "team";
+        else if (path.endsWith("archive") || path.endsWith("archive.html")) activeView = "archive";
+        else if (path.endsWith("archive-paid") || path.endsWith("archive-paid.html")) activeView = "archivePaid";
+        else if (path.endsWith("profile") || path.endsWith("profile.html")) activeView = "profile";
+        else if (path.endsWith("laporan") || path.endsWith("laporan.html")) activeView = "laporan";
+        else if (path.endsWith("laporan-honor") || path.endsWith("laporan-honor.html")) activeView = "laporanHonor";
+        else if (path.endsWith("honor") || path.endsWith("honor.html")) activeView = "honor";
 
         // 1. Mobile Header HTML
         const mobileHeaderHtml = `
@@ -259,7 +259,11 @@ const Layout = {
                     <span>Dzhirasena</span>
                 </div>
                 <div style="display:flex; align-items:center; gap: 12px;">
+                    <button class="control-btn" id="theme-toggle-btn-mobile" title="Ganti Tema" style="padding:6px;">
+                        <svg id="theme-icon-mobile" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
                     <div class="notification-wrapper">
+
                         <button class="control-btn notification-btn" id="notification-trigger-mobile" style="padding: 6px;">
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                             <span class="notification-badge hidden" id="notification-badge-count-mobile">0</span>
@@ -325,20 +329,11 @@ const Layout = {
                                 <span>Bayar Honor</span>
                             </a>
                         </li>
-                        <li class="nav-item has-submenu ${activeView === 'laporan' || activeView === 'laporanHonor' ? 'active' : ''}">
-                            <a href="#" class="submenu-toggle">
+                        <li class="nav-item ${activeView === 'laporan' || activeView === 'laporanHonor' ? 'active' : ''}" data-view="laporan">
+                            <a href="#">
                                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                                 <span>Laporan</span>
-                                <svg class="submenu-arrow" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="margin-left:auto; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                             </a>
-                            <ul class="sidebar-submenu">
-                                <li class="submenu-item ${activeView === 'laporan' ? 'active' : ''}" data-view="laporan">
-                                    <a href="#">Laporan Kinerja Karyawan</a>
-                                </li>
-                                <li class="submenu-item ${activeView === 'laporanHonor' ? 'active' : ''}" data-view="laporanHonor">
-                                    <a href="#">Laporan Honor</a>
-                                </li>
-                            </ul>
                         </li>
                         ` : (isAdmin ? `
                         <li class="nav-item ${activeView === 'laporan' ? 'active' : ''}" data-view="laporan">
@@ -395,7 +390,13 @@ const Layout = {
                         <input type="text" id="global-search" placeholder="Cari tugas...">
                     </div>
                     
+                    <button class="control-btn" id="theme-toggle-btn" title="Ganti Tema" style="position:relative;">
+                        <svg id="theme-icon-sun" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg id="theme-icon-moon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+
                     <div class="notification-wrapper">
+
                         <button class="control-btn notification-btn" id="notification-trigger">
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                             <span class="notification-badge hidden" id="notification-badge-count">0</span>
@@ -418,7 +419,7 @@ const Layout = {
                                 <span>${user.email}</span>
                             </div>
                             <div class="dropdown-divider"></div>
-                            <a href="profile.html" class="dropdown-item">Profil Saya</a>
+                            <a href="/profile" class="dropdown-item">Profil Saya</a>
                             <a href="#" class="dropdown-item" id="dropdown-logout-btn">Keluar</a>
                         </div>
                     </div>
@@ -867,15 +868,15 @@ const Layout = {
         const isAtasan = Auth.currentUser.role === "Atasan";
         
         const pages = {
-            dashboard: (Auth.currentUser.role === "Admin" || Auth.currentUser.role === "Project Manager" || isAtasan) ? "admin-dashboard.html" : "user-dashboard.html",
-            tasks: "tasks.html",
-            team: "team.html",
-            archive: "archive.html",
-            archivePaid: "archive-paid.html",
-            profile: "profile.html",
-            laporan: "laporan.html",
-            laporanHonor: "laporan-honor.html",
-            honor: "honor.html"
+            dashboard: (Auth.currentUser.role === "Admin" || Auth.currentUser.role === "Project Manager" || isAtasan) ? "/admin-dashboard" : "/user-dashboard",
+            tasks: "/tasks",
+            team: "/team",
+            archive: "/archive",
+            archivePaid: "/archive-paid",
+            profile: "/profile",
+            laporan: "/laporan",
+            laporanHonor: "/laporan-honor",
+            honor: "/honor"
         };
 
         // Setup initial submenu states
@@ -937,9 +938,40 @@ const Layout = {
         const mobProfile = document.getElementById("mobile-profile-trigger");
         if (mobProfile) {
             mobProfile.addEventListener("click", () => {
-                window.location.href = "profile.html";
+                window.location.href = "/profile";
             });
         }
+
+        // ── Theme Toggle ───────────────────────────────────────────────────────
+        const applyThemeIcons = () => {
+            const isDark = document.body.classList.contains("dark-theme");
+            const sunDesktop  = document.getElementById("theme-icon-sun");
+            const moonDesktop = document.getElementById("theme-icon-moon");
+            const moonMobile  = document.getElementById("theme-icon-mobile");
+
+            if (sunDesktop)  sunDesktop.style.display  = isDark ? "block" : "none";
+            if (moonDesktop) moonDesktop.style.display = isDark ? "none"  : "block";
+            // On mobile we always show the opposite of current state
+            if (moonMobile) {
+                moonMobile.innerHTML = isDark
+                    ? `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`
+                    : `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+            }
+        };
+
+        const toggleTheme = () => {
+            const isDark = document.body.classList.toggle("dark-theme");
+            localStorage.setItem("dzhirasena_theme", isDark ? "dark" : "light");
+            applyThemeIcons();
+        };
+
+        // Apply icons on init
+        applyThemeIcons();
+
+        const themeBtn       = document.getElementById("theme-toggle-btn");
+        const themeBtnMobile = document.getElementById("theme-toggle-btn-mobile");
+        if (themeBtn)       themeBtn.addEventListener("click", toggleTheme);
+        if (themeBtnMobile) themeBtnMobile.addEventListener("click", toggleTheme);
     },
 
     setupDropdowns() {
@@ -989,7 +1021,7 @@ const Layout = {
                 const query = e.target.value.trim().toLowerCase();
                 if (query) {
                     sessionStorage.setItem("global_search_query", query);
-                    window.location.href = "tasks.html";
+                    window.location.href = "/tasks";
                 }
             });
         }
