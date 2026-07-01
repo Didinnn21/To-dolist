@@ -1,28 +1,18 @@
-// ==========================================================================
-// DZHIRASENA - VITE CONFIGURATION
-// Proxy /api/* ke Express.js backend (port 3000)
-// ==========================================================================
-
 import { defineConfig } from 'vite';
-
-const proxyConfig = {
-    '/api': {
-        target: 'http://127.0.0.1:3000',
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path
-    }
-};
+import laravel from 'laravel-vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    plugins: [
+        laravel({
+            input: ['resources/css/app.css', 'resources/js/app.js'],
+            refresh: true,
+        }),
+        tailwindcss(),
+    ],
     server: {
-        port: 5173,
-        strictPort: false, // Otomatis naik ke port berikutnya jika 5173 terpakai
-        proxy: proxyConfig
+        watch: {
+            ignored: ['**/storage/framework/views/**'],
+        },
     },
-    preview: {
-        port: 4173,
-        strictPort: false,
-        proxy: proxyConfig
-    }
 });

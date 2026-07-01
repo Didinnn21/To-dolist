@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Dzhirasena</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+</head>
+
+<body>
+    <script>if(localStorage.getItem('dzhirasena_theme')==='dark') document.body.classList.add('dark-theme');</script>
+
+    <!-- Container content for Layout.js to inject and wrap -->
+    <div id="page-content">
+        <!-- VIEW A: DASHBOARD -->
+        <section id="dashboard-view" class="app-view">
+            <div class="view-header-row">
+                <div>
+                    <h1 class="view-title">Dashboard Kerja (Admin)</h1>
+                    <p class="view-subtitle">Ringkasan aktivitas dan manajemen tugas tim Anda.</p>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card bg-white-card" data-progress-type="total" style="cursor:pointer;"
+                    title="Klik untuk lihat detail">
+                    <div class="metric-icon blue-bg">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="#0a52c6" stroke-width="2" fill="none">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span>TOTAL TUGAS</span>
+                        <h3 id="stat-total-tasks">0</h3>
+                        <p class="stat-trend trend-up"><span class="trend-icon">↑</span> terkelola</p>
+                        <div class="metric-mini-bar">
+                            <div class="metric-mini-fill blue-fill" id="mini-bar-total" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white-card" data-progress-type="running" style="cursor:pointer;"
+                    title="Klik untuk lihat detail">
+                    <div class="metric-icon orange-bg">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="#f3a638" stroke-width="2" fill="none">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span>BERJALAN</span>
+                        <h3 id="stat-running-tasks">0</h3>
+                        <p class="stat-trend trend-neutral">sedang diproses</p>
+                        <div class="metric-mini-bar">
+                            <div class="metric-mini-fill orange-fill" id="mini-bar-running" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card bg-white-card" data-progress-type="completed" style="cursor:pointer;"
+                    title="Klik untuk lihat detail">
+                    <div class="metric-icon green-bg">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="#10b981" stroke-width="2" fill="none">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span>SELESAI</span>
+                        <h3 id="stat-completed-tasks">0</h3>
+                        <p class="stat-trend trend-up"><span id="completed-percentage-badge">0%</span> target tim</p>
+                        <div class="metric-mini-bar">
+                            <div class="metric-mini-fill green-fill" id="mini-bar-completed" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Layout Splits: Task List + Side Controls -->
+            <div class="dashboard-split-layout">
+                <!-- Left Side: Task list -->
+                <div class="tasks-main-column">
+                    <div class="section-title-row">
+                        <h2>Aktivitas Terbaru Tim</h2>
+                        <div class="filter-controls">
+                            <div class="select-style-wrapper">
+                                <select id="task-filter-category" class="filter-select">
+                                    <option value="all">Semua Kategori</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Design">Design</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="IT">IT</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary filter-btn" id="filter-sort-btn">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                    fill="none">
+                                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                                    <circle cx="4" cy="12" r="2"></circle>
+                                    <circle cx="12" cy="10" r="2"></circle>
+                                    <circle cx="20" cy="14" r="2"></circle>
+                                </svg>
+                                <span>Urutkan</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tasks List Container -->
+                    <div class="task-list-wrapper" id="dashboard-task-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right Side Widget: Add Form + Weekly progress -->
+                <aside class="desktop-task-widget">
+                    <div class="widget-card add-task-card">
+                        <h3>Tambah Tugas Baru</h3>
+                        <form id="add-task-form">
+                            <div class="form-group">
+                                <label for="task-name">Nama Tugas</label>
+                                <input type="text" id="task-name" placeholder="Masukkan nama tugas..." required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="task-desc">Deskripsi Tugas</label>
+                                <textarea id="task-desc" placeholder="Jelaskan detail tugas di sini..."
+                                    rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="task-files">Lampiran Dokumen</label>
+                                <input type="file" id="task-files" multiple
+                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                                    style="font-size: 13px; padding: 8px;">
+                                <small style="color: var(--text-muted); font-size: 11px;">Mendukung gambar, PDF, Word,
+                                    Excel, PPT.</small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-6">
+                                    <label for="task-category">Kategori</label>
+                                    <input type="text" id="task-category" list="task-category-options" placeholder="Ketik atau pilih kategori..." required style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
+                                    <datalist id="task-category-options">
+                                        <option value="Keuangan">
+                                        <option value="Desain">
+                                        <option value="Pemasaran">
+                                        <option value="Teknologi Informasi">
+                                        <option value="Jurnal">
+                                    </datalist>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label for="task-deadline">Deadline</label>
+                                    <input type="date" id="task-deadline" required>
+                                </div>
+                            </div>
+
+                            <!-- New Username and Password fields for Journal category -->
+                            <div class="form-row hidden" id="journal-fields" style="margin-bottom: 18px;">
+                                <div class="form-group col-6" style="margin-bottom: 0;">
+                                    <label for="task-username">Username Jurnal</label>
+                                    <input type="text" id="task-username" placeholder="Masukkan username..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
+                                </div>
+                                <div class="form-group col-6" style="margin-bottom: 0;">
+                                    <label for="task-password">Password Jurnal</label>
+                                    <input type="text" id="task-password" placeholder="Masukkan password..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); outline: none; background-color: #F8FAFC;">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="task-assignee">Ditugaskan Kepada</label>
+                                <select id="task-assignee">
+                                    <!-- Hydrated dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Prioritas</label>
+                                <div class="priority-selector">
+                                    <input type="radio" name="priority" id="prio-high" value="Tinggi" checked>
+                                    <label for="prio-high" class="prio-btn prio-high-label">Tinggi</label>
+
+                                    <input type="radio" name="priority" id="prio-medium" value="Sedang">
+                                    <label for="prio-medium" class="prio-btn prio-medium-label">Sedang</label>
+
+                                    <input type="radio" name="priority" id="prio-low" value="Rendah">
+                                    <label for="prio-low" class="prio-btn prio-low-label">Rendah</label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span>Simpan Tugas</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="widget-card progress-widget-card">
+                        <div class="progress-header">
+                            <h3>Weekly Progress Tim</h3>
+                            <span id="weekly-progress-percent">0%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="weekly-progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <p class="progress-meta">Sebanyak <strong id="weekly-completed-count">0</strong> tugas telah
+                            diselesaikan oleh tim Anda.</p>
+                    </div>
+
+                    <div class="widget-card team-workload-widget" id="team-workload-widget" style="margin-top: 16px;">
+                        <h3 style="font-size: 15px; margin-bottom: 12px; font-weight: 600;">Beban Kerja Tim</h3>
+                        <div class="team-workload-list" id="team-workload-list" style="display: flex; flex-direction: column;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </div>
+
+    <!-- Shared Scripts -->
+    <script src="{{ asset('js/db.js') }}"></script>
+    <script src="{{ asset('js/auth.js') }}"></script>
+    <script src="{{ asset('js/layout.js') }}"></script>
+
+    <!-- Page Logic -->
+    <script src="{{ asset('js/dashboard.js') }}"></script>
+</body>
+
+</html>

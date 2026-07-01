@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - Dzhirasena</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+</head>
+
+<body>
+    <script>if(localStorage.getItem('dzhirasena_theme')==='dark') document.body.classList.add('dark-theme');</script>
+
+    <!-- Container content for Layout.js to inject and wrap -->
+    <div id="page-content">
+        <!-- VIEW E: PROFILE / MOBILE MORE -->
+        <section id="profile-view" class="app-view">
+            <h1 class="view-title">Pengaturan Profil</h1>
+            <p class="view-subtitle">Kelola profil pribadi dan preferensi aplikasi Anda.</p>
+
+            <div class="profile-settings-card">
+                <div class="settings-avatar-section">
+                    <div class="avatar-container">
+                        <img src="" alt="Profile" class="user-avatar-img large-avatar" id="settings-avatar-img">
+                        <label for="avatar-file-input" class="change-avatar-overlay" title="Ubah Foto Profil">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                                </path>
+                                <circle cx="12" cy="13" r="4"></circle>
+                            </svg>
+                        </label>
+                        <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="settings-avatar-info">
+                        <h3 id="settings-name">Nama Pengguna</h3>
+                        <p id="settings-email">email@company.com</p>
+                        <span class="role-badge" id="settings-role-badge">Role</span>
+                    </div>
+                </div>
+
+                <div class="settings-fields-section">
+                    <div class="form-group">
+                        <label for="settings-name-input">Nama Lengkap</label>
+                        <input type="text" id="settings-name-input" placeholder="Nama Lengkap" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-npwp-input">Nomor NPWP</label>
+                        <input type="text" id="settings-npwp-input" placeholder="Masukkan 15 digit NPWP (Contoh: 12.345.678.9-012.000)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-bank-account-input">Nomor Rekening</label>
+                        <input type="text" id="settings-bank-account-input" placeholder="Contoh: BCA 1234567890 a/n Nama Anda">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-portfolio-input">Link Portofolio Online</label>
+                        <input type="url" id="settings-portfolio-input" placeholder="https://portfolio-anda.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-gender-select">Jenis Kelamin</label>
+                        <select id="settings-gender-select" class="toolbar-select" style="width: 100%; height: auto;">
+                            <option value="">Pilih Jenis Kelamin</option>
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="settings-address-textarea">Alamat Lengkap</label>
+                        <textarea id="settings-address-textarea" placeholder="Masukkan alamat lengkap rumah Anda" rows="3" style="width: 100%;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Dokumen CV (PDF atau Gambar)</label>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                            <label for="cv-file-input" class="btn btn-secondary" style="padding: 10px 16px; margin: 0; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <span>Unggah CV</span>
+                            </label>
+                            <input type="file" id="cv-file-input" accept="application/pdf,image/*" style="display: none;">
+                            <span id="cv-file-info" style="font-size: 13px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Belum ada file diunggah</span>
+                        </div>
+                        <div id="cv-preview-container" style="margin-top: 10px; display: none;">
+                            <a id="cv-preview-link" href="#" target="_blank" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; text-decoration: none;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <span>Lihat CV Terunggah</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Foto KTP</label>
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                            <label for="ktp-file-input" class="btn btn-secondary" style="padding: 10px 16px; margin: 0; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <span>Unggah Foto KTP</span>
+                            </label>
+                            <input type="file" id="ktp-file-input" accept="image/*" style="display: none;">
+                            <span id="ktp-file-info" style="font-size: 13px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Belum ada file diunggah</span>
+                        </div>
+                        <div id="ktp-preview-container" style="margin-top: 10px; display: none;">
+                            <a id="ktp-preview-link" href="#" target="_blank" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; width: fit-content; text-decoration: none;">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <span>Lihat KTP Terunggah</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <button id="btn-save-profile" class="btn btn-primary" style="padding: 12px 24px; margin-bottom: 24px; width: 100%;">Simpan Perubahan Profil</button>
+                    
+                    <div style="border-top: 1px solid var(--border); margin-bottom: 20px; padding-top: 10px;"></div>
+
+                    <div class="form-group">
+                        <label for="settings-password-input">Ganti Kata Sandi</label>
+                        <div style="display: flex; gap: 8px;">
+                            <div style="position: relative; flex: 1;">
+                                <input type="password" id="settings-password-input" placeholder="Masukkan kata sandi baru"
+                                    style="padding-right: 40px; box-sizing: border-box;">
+                                <button type="button" id="toggle-password-visibility" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 4px;">
+                                    <!-- Eye Icon -->
+                                    <svg id="icon-show-password" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    <!-- Eye Off Icon -->
+                                    <svg id="icon-hide-password" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                                </button>
+                            </div>
+                            <button id="btn-save-password" class="btn btn-primary"
+                                style="padding: 12px 20px; white-space: nowrap;">Perbarui Sandi</button>
+                        </div>
+                        <small style="color: var(--text-secondary); margin-top: 4px; display: block;">Minimal 6 karakter.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ganti Bahasa</label>
+                        <select id="settings-lang-select" class="toolbar-select" style="width: 100%;">
+                            <option value="id">Bahasa Indonesia</option>
+                            <option value="en">English (US)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mode Tampilan</label>
+                        <select id="settings-theme-select" class="toolbar-select" style="width: 100%;">
+                            <option value="light">Light Mode (Terang)</option>
+                            <option value="dark">Dark Mode (Gelap)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-logout btn-block" style="margin-top: 24px;" id="btn-logout-mobile">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span>Keluar dari Akun</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Shared Scripts -->
+    <script src="{{ asset('js/db.js') }}"></script>
+    <script src="{{ asset('js/auth.js') }}"></script>
+    <script src="{{ asset('js/layout.js') }}"></script>
+
+    <!-- Page Logic -->
+    <script src="{{ asset('js/profile.js') }}"></script>
+</body>
+
+</html>
