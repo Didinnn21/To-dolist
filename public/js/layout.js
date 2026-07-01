@@ -1045,6 +1045,25 @@ const Layout = {
             });
         }
 
+        // Mobile Search Toggle
+        const searchToggleBtn = document.getElementById("search-toggle-btn-mobile");
+        const searchContainer = document.getElementById("mobile-search-bar-container");
+        if (searchToggleBtn && searchContainer) {
+            searchToggleBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                searchContainer.classList.toggle("hidden");
+                if (!searchContainer.classList.contains("hidden")) {
+                    const input = searchContainer.querySelector("input");
+                    if (input) input.focus();
+                }
+            });
+            document.addEventListener("click", (e) => {
+                if (!searchContainer.contains(e.target) && e.target !== searchToggleBtn) {
+                    searchContainer.classList.add("hidden");
+                }
+            });
+        }
+
         // Global search redirect
         const globalSearch = document.getElementById("global-search");
         const mobGlobalSearch = document.getElementById("mobile-global-search");

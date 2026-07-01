@@ -262,6 +262,9 @@ const Layout = {
                     <button class="control-btn" id="theme-toggle-btn-mobile" title="Ganti Tema" style="padding:6px;">
                         <svg id="theme-icon-mobile" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                     </button>
+                    <button class="control-btn" id="search-toggle-btn-mobile" title="Cari Tugas" style="padding:6px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
                     <div class="notification-wrapper">
 
                         <button class="control-btn notification-btn" id="notification-trigger-mobile" style="padding: 6px;">
@@ -281,6 +284,13 @@ const Layout = {
                         <img src="${user.avatar}" alt="Profile" class="user-avatar-img">
                     </div>
                 </div>
+                
+                <div id="mobile-search-bar-container" class="hidden" style="position: absolute; top: 56px; left: 0; right: 0; background: var(--bg-card); padding: 10px 16px; border-bottom: 1px solid var(--border); z-index: 80; box-shadow: var(--shadow-sm);">
+                    <div class="search-bar" style="width: 100%; border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; display: flex; align-items: center; gap: 8px; background: var(--bg-subtle);">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="mobile-global-search" placeholder="Cari tugas..." style="border: none; background: transparent; outline: none; width: 100%; font-size: 13px; color: var(--text-primary);">
+                    </div>
+                </div>
             </header>
         `;
 
@@ -298,12 +308,7 @@ const Layout = {
                     </div>
                 </div>
                 
-                <div class="mobile-only-search">
-                    <div class="search-bar" style="width: 100%; border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; display: flex; align-items: center; gap: 8px; background: var(--bg-card);">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        <input type="text" id="mobile-global-search" placeholder="Cari tugas..." style="border: none; background: transparent; outline: none; width: 100%; font-size: 13px; color: var(--text-primary);">
-                    </div>
-                </div>
+
 
                 <nav class="sidebar-nav">
                     <ul>
@@ -1037,6 +1042,25 @@ const Layout = {
             });
             document.addEventListener("click", () => {
                 notifDropdownMob.classList.remove("show");
+            });
+        }
+
+        // Mobile Search Toggle
+        const searchToggleBtn = document.getElementById("search-toggle-btn-mobile");
+        const searchContainer = document.getElementById("mobile-search-bar-container");
+        if (searchToggleBtn && searchContainer) {
+            searchToggleBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                searchContainer.classList.toggle("hidden");
+                if (!searchContainer.classList.contains("hidden")) {
+                    const input = searchContainer.querySelector("input");
+                    if (input) input.focus();
+                }
+            });
+            document.addEventListener("click", (e) => {
+                if (!searchContainer.contains(e.target) && e.target !== searchToggleBtn) {
+                    searchContainer.classList.add("hidden");
+                }
             });
         }
 
