@@ -297,6 +297,13 @@ const Layout = {
                         <p>${user.role}</p>
                     </div>
                 </div>
+                
+                <div class="mobile-only-search">
+                    <div class="search-bar" style="width: 100%; border: 1px solid var(--border); border-radius: var(--r-md); padding: 8px 12px; display: flex; align-items: center; gap: 8px; background: var(--bg-card);">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="text" id="mobile-global-search" placeholder="Cari tugas..." style="border: none; background: transparent; outline: none; width: 100%; font-size: 13px; color: var(--text-primary);">
+                    </div>
+                </div>
 
                 <nav class="sidebar-nav">
                     <ul>
@@ -498,6 +505,7 @@ const Layout = {
         // Assemble Scaffold
         appScreen.innerHTML = `
             ${mobileHeaderHtml}
+            <div id="mobile-sidebar-overlay" class="mobile-sidebar-overlay"></div>
             ${desktopSidebarHtml}
             <main class="main-layout">
                 ${desktopHeaderHtml}
@@ -879,6 +887,32 @@ const Layout = {
             honor: "/honor"
         };
 
+        // Mobile Sidebar Toggle
+        const mobMenuBtn = document.getElementById("mobile-menu-btn");
+        const desktopSidebar = document.querySelector(".desktop-sidebar");
+        const sidebarOverlay = document.getElementById("mobile-sidebar-overlay");
+        
+        if (mobMenuBtn && desktopSidebar && sidebarOverlay) {
+            mobMenuBtn.addEventListener("click", () => {
+                desktopSidebar.classList.add("open");
+                sidebarOverlay.classList.add("show");
+            });
+            sidebarOverlay.addEventListener("click", () => {
+                desktopSidebar.classList.remove("open");
+                sidebarOverlay.classList.remove("show");
+            });
+            
+            // Also close sidebar if clicking a nav item on mobile
+            document.querySelectorAll(".sidebar-nav .nav-item:not(.has-submenu), .sidebar-nav .submenu-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    if (window.innerWidth <= 1024) {
+                        desktopSidebar.classList.remove("open");
+                        sidebarOverlay.classList.remove("show");
+                    }
+                });
+            });
+        }
+
         // Setup initial submenu states
         document.querySelectorAll(".sidebar-nav .has-submenu").forEach(item => {
             const submenu = item.querySelector(".sidebar-submenu");
@@ -1016,13 +1050,28 @@ const Layout = {
 
         // Global search redirect
         const globalSearch = document.getElementById("global-search");
+        const mobGlobalSearch = document.getElementById("mobile-global-search");
+        
+        const handleSearch = (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            if (query) {
+                sessionStorage.setItem("global_search_query", query);
+                window.location.href = "/tasks";
+            }
+        };
+
         if (globalSearch) {
-            globalSearch.addEventListener("input", (e) => {
-                const query = e.target.value.trim().toLowerCase();
-                if (query) {
-                    sessionStorage.setItem("global_search_query", query);
-                    window.location.href = "/tasks";
-                }
+            globalSearch.addEventListener("change", handleSearch);
+            // Also allow Enter key press
+            globalSearch.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") handleSearch(e);
+            });
+        }
+        
+        if (mobGlobalSearch) {
+            mobGlobalSearch.addEventListener("change", handleSearch);
+            mobGlobalSearch.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") handleSearch(e);
             });
         }
     },
