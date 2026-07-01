@@ -84,7 +84,7 @@
                 <!-- User Table -->
                 <div class="table-card">
                     <div class="table-responsive">
-                        <table class="user-table">
+                        <table class="user-table" id="team-user-table">
                             <thead>
                                 <tr>
                                     <th>PENGGUNA</th>

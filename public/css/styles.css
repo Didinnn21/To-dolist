@@ -1698,6 +1698,84 @@ body.dark-theme {
   }
 }
 
+/* Responsive Team User Table for Mobile (≤768px) */
+@media (max-width: 768px) {
+  #team-user-table,
+  #team-user-table thead,
+  #team-user-table tbody,
+  #team-user-table th,
+  #team-user-table td,
+  #team-user-table tr {
+    display: block;
+  }
+  
+  #team-user-table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  
+  #team-user-table tbody tr {
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--bg-card);
+    margin-bottom: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  #team-user-table td {
+    border: none;
+    position: relative;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  #team-user-table td:nth-of-type(1) {
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  #team-user-table td:nth-of-type(2)::before {
+    content: "Role:";
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  
+  #team-user-table td:nth-of-type(3)::before {
+    content: "Status:";
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  
+  #team-user-table td:nth-of-type(4) {
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  #team-user-table td:nth-of-type(4) > div {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+  
+  #team-user-table td:nth-of-type(4) button {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  #team-user-table .table-user-email {
+    display: block !important;
+  }
+}
+
 /* ── 16. TEAM WORKLOAD WIDGET ──────────────────────────────────────────────── */
 .team-workload-list {
   display: flex;
