@@ -1123,15 +1123,8 @@ input:checked + .slider::before { transform: translateX(17px); }
 /* ── 27. RESPONSIVE — TABLET & MOBILE (≤1024px) ──────────────────────────── */
 @media (max-width: 1024px) {
   .desktop-sidebar {
-    display: flex;
-    position: fixed;
-    top: 0; left: -100%; bottom: 0;
-    width: 260px;
-    z-index: 200;
-    transition: left 0.3s ease;
-    box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+    display: none !important;
   }
-  .desktop-sidebar.open { left: 0; }
   
   .mobile-sidebar-overlay {
     position: fixed; inset: 0; background: rgba(15,23,42,.5);
@@ -1155,11 +1148,7 @@ input:checked + .slider::before { transform: translateX(17px); }
   .mobile-only-search { display: block; }
 
   .mobile-menu-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--brand); padding: 8px;
-    border-radius: var(--r-md);
-    display: flex; align-items: center; justify-content: center;
-    transition: background var(--transition);
+    display: none !important;
   }
   .mobile-menu-btn:hover { background: var(--bg-subtle); }
   .mobile-logo { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: 16px; color: var(--brand); }
