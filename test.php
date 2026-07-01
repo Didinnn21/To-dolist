@@ -1,0 +1,1 @@
+<?php require "vendor/autoload.php"; $app = require_once "bootstrap/app.php"; $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class); $kernel->bootstrap(); try { dump(\App\Models\User::find("00000000-0000-0000-0000-000000000000")); } catch(\Exception $e) { dump($e->getMessage()); }
