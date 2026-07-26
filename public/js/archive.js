@@ -85,9 +85,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             <span>•</span>
                             <span>Prioritas: ${item.priority}</span>
                         </div>
-                        <div class="task-assignee-avatar">
+                        <div class="task-assignee-info" style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
                             <div class="avatar-tooltip-container">
-                                <img src="${assignee.avatar}" alt="${assignee.name}">
+                                <img src="${assignee.avatar}" alt="${assignee.name}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); margin: 0; display: block;">
                                 <div class="avatar-tooltip">
                                     <div class="avatar-tooltip-header">
                                         <img src="${assignee.avatar}" alt="${assignee.name}" class="tooltip-avatar-img">
@@ -108,6 +108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     </div>
                                 </div>
                             </div>
+                            <span class="archive-assignee-name" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary);">${assignee.name}</span>
                         </div>
                     </div>
                     <div class="task-actions-col">
