@@ -827,6 +827,7 @@ const Layout = {
                             <div class="comment-input-row">
                                 <img id="comment-user-avatar" src="" alt="" class="comment-avatar">
                                 <div class="comment-input-wrap">
+                                    <span class="comment-input-author" id="comment-input-author-name"></span>
                                     <textarea id="comment-input" placeholder="Tulis laporan progress..." rows="2"></textarea>
                                     <button class="btn btn-primary btn-sm" id="send-comment-btn">
                                         <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
@@ -1675,7 +1676,10 @@ const Layout = {
                         </div>
                         <div class="detail-info-item" style="grid-column: span 2;">
                             <span class="detail-label">Anggota Tim</span>
-                            <span>${assigneeName || '-'}</span>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <img src="${assignee.avatar || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80'}" alt="${assigneeName}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
+                                <span style="font-weight: 600; color: var(--text-primary);">${assigneeName || '-'}</span>
+                            </div>
                         </div>
                         ${username ? `<div class="detail-info-item">
                             <span class="detail-label">Username Jurnal</span>
@@ -1763,9 +1767,11 @@ const Layout = {
                 commentInputRowEl.style.display = (isCompletedTask && !isUserAdmin) ? "none" : "flex";
             }
 
-            // Set current user avatar on comment input
+            // Set current user avatar and name on comment input
             const commentAvatar = document.getElementById("comment-user-avatar");
             if (commentAvatar) commentAvatar.src = Auth.currentUser.avatar;
+            const commentInputAuthor = document.getElementById("comment-input-author-name");
+            if (commentInputAuthor) commentInputAuthor.textContent = `${Auth.currentUser.name} (Anda)`;
 
             modal.classList.remove("hidden");
         };
