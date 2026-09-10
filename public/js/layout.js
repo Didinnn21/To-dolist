@@ -935,17 +935,7 @@ const Layout = {
             }
         });
 
-        // ── INSTANT PRELOADER & FAST NAVIGATION LOADER ──────────────────────────
-        const preloadedUrls = new Set();
-        const preloadPage = (url) => {
-            if (!url || preloadedUrls.has(url) || url === window.location.pathname) return;
-            preloadedUrls.add(url);
-            const link = document.createElement("link");
-            link.rel = "prefetch";
-            link.href = url;
-            document.head.appendChild(link);
-        };
-
+        // ── FAST NAVIGATION LOADER ──────────────────────────────────────────────
         const navigateTo = (url) => {
             if (!url || window.location.pathname === url) return;
             let loader = document.getElementById("page-transition-loader");
@@ -959,23 +949,10 @@ const Layout = {
             window.location.href = url;
         };
 
-        // Preload all main page routes immediately in idle time
-        if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(() => {
-                Object.values(pages).forEach(url => preloadPage(url));
-            });
-        } else {
-            setTimeout(() => {
-                Object.values(pages).forEach(url => preloadPage(url));
-            }, 1000);
-        }
-
         // Desktop sidebar nav click (non-submenu items and submenu items)
         document.querySelectorAll(".sidebar-nav .nav-item:not(.has-submenu), .sidebar-nav .submenu-item").forEach(item => {
             const view = item.getAttribute("data-view");
             if (view && pages[view]) {
-                item.addEventListener("mouseenter", () => preloadPage(pages[view]), { passive: true });
-                item.addEventListener("touchstart", () => preloadPage(pages[view]), { passive: true });
                 item.addEventListener("click", (e) => {
                     e.preventDefault();
                     navigateTo(pages[view]);
@@ -987,8 +964,6 @@ const Layout = {
         document.querySelectorAll(".mobile-bottom-nav .bottom-nav-item").forEach(item => {
             const view = item.getAttribute("data-view");
             if (view && pages[view]) {
-                item.addEventListener("mouseenter", () => preloadPage(pages[view]), { passive: true });
-                item.addEventListener("touchstart", () => preloadPage(pages[view]), { passive: true });
                 item.addEventListener("click", (e) => {
                     e.preventDefault();
                     navigateTo(pages[view]);
@@ -1010,7 +985,6 @@ const Layout = {
         // Mobile profile trigger to setting page
         const mobProfile = document.getElementById("mobile-profile-trigger");
         if (mobProfile) {
-            mobProfile.addEventListener("mouseenter", () => preloadPage("/profile"), { passive: true });
             mobProfile.addEventListener("click", () => {
                 navigateTo("/profile");
             });
