@@ -66,7 +66,7 @@
             <div class="view-header-row">
                 <div>
                     <h1 class="view-title">Sistem Honor</h1>
-                    <p class="view-subtitle">Perhitungan honor otomatis berdasarkan jumlah tugas selesai.</p>
+                    <p class="view-subtitle">Pembayaran honor pelunasan maupun DP awal untuk tugas karyawan.</p>
                 </div>
             </div>
 
@@ -91,7 +91,7 @@
                         <thead>
                             <tr>
                                 <th>Karyawan</th>
-                                <th style="text-align: center;">Tugas Selesai</th>
+                                <th style="text-align: center;">Status & Total Tugas</th>
                                 <th style="text-align: right;">Total Terinput</th>
                                 <th style="text-align: center;">Aksi</th>
                             </tr>

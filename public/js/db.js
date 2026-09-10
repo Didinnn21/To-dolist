@@ -761,18 +761,33 @@ const DB = {
     async saveHonorPayment(employeeId, employeeName, amount, completedTaskIds, taskAmounts) {
         this._invalidateCache();
         try {
-            // Update setiap task: status → Paid, honor_amount
+            let isDpPayment = false;
+            // Update setiap task: honor_amount & status
             for (const taskId of completedTaskIds) {
                 const taskAmount = taskAmounts ? Number(taskAmounts[taskId]) || 0 : 0;
+                const task = this.tasks.find(t => t.id === taskId);
+                
+                let targetStatus = 'Paid';
+                if (task) {
+                    if (task.status === 'In Progress' || task.status === 'Pending' || task.status === 'Todo') {
+                        targetStatus = 'In Progress'; // DP Awal: Tetap In Progress agar staf bisa selesaikan
+                        isDpPayment = true;
+                    } else {
+                        targetStatus = 'Paid'; // Pelunasan tugas selesai
+                    }
+                }
+
+                const currentHonor = task ? (Number(task.honorAmount) || 0) : 0;
+                const updatedHonorTotal = currentHonor + taskAmount;
+
                 await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
                     method: 'PATCH',
-                    body: JSON.stringify({ status: 'Paid', honor_amount: taskAmount })
+                    body: JSON.stringify({ status: targetStatus, honor_amount: updatedHonorTotal })
                 });
 
-                const task = this.tasks.find(t => t.id === taskId);
                 if (task) {
-                    task.status = 'Paid';
-                    if (taskAmount) task.honorAmount = taskAmount;
+                    task.status = targetStatus;
+                    task.honorAmount = updatedHonorTotal;
                 }
             }
 
@@ -796,7 +811,8 @@ const DB = {
                 console.warn('Gagal simpan honor record (tabel mungkin belum ada):', err.message);
             });
 
-            if (window.showToast) window.showToast(`Honor Rp${Number(amount).toLocaleString()} untuk ${employeeName} berhasil dibayarkan.`, 'success');
+            const paymentTypeMsg = isDpPayment ? 'DP Honor' : 'Honor';
+            if (window.showToast) window.showToast(`${paymentTypeMsg} Rp${Number(amount).toLocaleString('id-ID')} untuk ${employeeName} berhasil dibayarkan.`, 'success');
             return { success: true };
         } catch (err) {
             console.error('Gagal memproses pembayaran honor:', err.message);

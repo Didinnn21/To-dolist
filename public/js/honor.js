@@ -76,20 +76,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Pay a single task individually
+    // Pay a single task individually (DP Awal or Pelunasan)
     window.paySingleTask = async (empId, empName, taskId) => {
         const input = document.getElementById('honor-input-' + taskId);
         const amount = parseInt(input.value) || 0;
 
         if (amount <= 0) {
-            window.showToast("Silakan masukkan nominal honor tugas yang valid (lebih dari 0).", "error");
+            window.showToast("Silakan masukkan nominal honor/DP yang valid (lebih dari 0).", "error");
             return;
         }
 
         const task = DB.tasks.find(t => t.id === taskId);
         const taskTitle = task ? task.title : 'Tugas';
+        const isUnfinished = task && (task.status === "In Progress" || task.status === "Pending" || task.status === "Todo");
+        const paymentTypeLabel = isUnfinished ? "DP Awal" : "Pelunasan Honor";
+        const statusNote = isUnfinished ? "Status tugas akan tetap 'Dalam Proses' agar karyawan dapat menyelesaikannya." : "Status tugas akan diperbarui menjadi Lunas (Paid).";
 
-        if (confirm(`Apakah Anda yakin ingin membayarkan honor sebesar Rp ${amount.toLocaleString('id-ID')} untuk tugas "${taskTitle}" kepada ${empName}?`)) {
+        if (confirm(`Apakah Anda yakin ingin membayarkan ${paymentTypeLabel} sebesar Rp ${amount.toLocaleString('id-ID')} untuk tugas "${taskTitle}" kepada ${empName}?\n\n(${statusNote})`)) {
             const taskAmounts = { [taskId]: amount };
             const success = await DB.saveHonorPayment(empId, empName, amount, [taskId], taskAmounts);
             if (success) {
@@ -119,13 +122,34 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        if (confirm(`Apakah Anda yakin ingin membayarkan total honor sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${activeTaskIds.length} tugas kepada ${empName}?`)) {
+        if (confirm(`Apakah Anda yakin ingin membayarkan total honor/DP sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${activeTaskIds.length} tugas kepada ${empName}?`)) {
             const success = await DB.saveHonorPayment(empId, empName, totalAmount, activeTaskIds, taskAmounts);
             if (success) {
                 renderHonor(); // Refresh the table
             }
         }
     };
+
+    // Helper: render status badge for a task
+    function renderTaskStatusBadge(t) {
+        const honorAmt = Number(t.honorAmount) || 0;
+        const status = t.status;
+
+        if (status === "Paid") {
+            return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💵 Lunas (Total: Rp${honorAmt.toLocaleString('id-ID')})</span>`;
+        }
+        if (status === "Completed") {
+            if (honorAmt > 0) {
+                return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (DP Paid: Rp${honorAmt.toLocaleString('id-ID')})</span>`;
+            }
+            return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (Menunggu Pelunasan)</span>`;
+        }
+        // In Progress / Pending / Todo
+        if (honorAmt > 0) {
+            return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 DP Terbayar: Rp${honorAmt.toLocaleString('id-ID')} (Masih Proses)</span>`;
+        }
+        return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">🔄 Masih Proses</span>`;
+    }
 
     // Main render function
     function renderHonor() {
@@ -141,18 +165,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             employees = employees.filter(emp => emp.name.toLowerCase().includes(searchQuery));
         }
 
-        // Calculate completed tasks metrics per employee
+        // Calculate tasks metrics per employee (both in-progress and completed)
         const honorData = employees.map(emp => {
             const empTasks = DB.tasks.filter(t => {
                 const assignedIds = DB._parseAssignees(t.assignedTo);
                 return assignedIds.includes(emp.id);
             });
 
-            const selesai = empTasks.filter(t => t.status === "Completed").length;
+            const selesai = empTasks.filter(t => t.status === "Completed" || t.status === "Paid").length;
+            const proses = empTasks.filter(t => t.status === "In Progress" || t.status === "Pending" || t.status === "Todo").length;
+            const total = empTasks.length;
 
             return {
                 ...emp,
-                selesai
+                empTasks,
+                selesai,
+                proses,
+                total
             };
         });
 
@@ -163,12 +192,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let html = "";
         honorData.forEach(data => {
-            const completedTasksForEmp = DB.tasks.filter(t => {
-                const assignedIds = DB._parseAssignees(t.assignedTo);
-                return assignedIds.includes(data.id) && t.status === "Completed";
-            });
-
-            const isPayable = data.selesai > 0;
+            const tasksForEmp = data.empTasks;
+            const isPayable = data.total > 0;
 
             html += `
                 <tr class="employee-row" data-employee-id="${data.id}" style="border-bottom: 1px solid var(--border-color);">
@@ -181,39 +206,56 @@ document.addEventListener("DOMContentLoaded", async () => {
                             </div>
                         </div>
                     </td>
-                    <td style="text-align: center; font-weight: bold; color: var(--success); font-size: 16px;">${data.selesai}</td>
+                    <td style="text-align: center;">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+                            <span style="font-weight: bold; font-size: 13px; color: var(--text-dark);">${data.total} Total Tugas</span>
+                            <div style="display: flex; gap: 6px; font-size: 11px;">
+                                <span style="color: var(--success); font-weight: 600;">${data.selesai} Selesai</span>
+                                <span style="color: var(--text-muted);">|</span>
+                                <span style="color: #b45309; font-weight: 600;">${data.proses} Proses</span>
+                            </div>
+                        </div>
+                    </td>
                     <td style="text-align: right; font-weight: bold; color: var(--text-dark); font-size: 14px;" id="emp-total-preview-${data.id}">Rp0</td>
                     <td style="text-align: center;">
-                        <button class="btn btn-secondary btn-sm toggle-tasks-btn" data-employee-id="${data.id}" data-count="${data.selesai}" ${!isPayable ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                            Tampilkan Tugas (${data.selesai})
+                        <button class="btn btn-secondary btn-sm toggle-tasks-btn" data-employee-id="${data.id}" data-count="${data.total}" ${!isPayable ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                            Tampilkan Tugas (${data.total})
                         </button>
                     </td>
                 </tr>
                 <tr class="tasks-expand-row hidden" id="tasks-row-${data.id}" style="background: var(--bg-card);">
                     <td colspan="4" style="padding: 16px 24px; border-bottom: 1px solid var(--border-color);">
                         <div class="expand-tasks-container" style="border-left: 3px solid var(--brand); padding-left: 16px;">
-                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Tugas Selesai: ${data.name}</h4>
+                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Daftar Tugas: ${data.name}</h4>
                             <div class="expand-tasks-list" style="display: flex; flex-direction: column; gap: 10px;">
-                                ${completedTasksForEmp.map(t => `
+                                ${tasksForEmp.map(t => {
+                                    const isUnfinished = (t.status === "In Progress" || t.status === "Pending" || t.status === "Todo");
+                                    const inputPlaceholder = isUnfinished ? "Nominal DP (Rp)" : "Nominal (Rp)";
+                                    const btnLabel = isUnfinished ? "Bayar DP" : (t.status === "Paid" ? "Bayar" : "Bayar");
+                                    const btnClass = isUnfinished ? "btn-primary" : "btn-primary";
+
+                                    return `
                                     <div class="expand-task-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-app); box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
                                         <div style="flex: 1; min-width: 0; margin-right: 16px;">
                                             <div style="font-weight: 600; font-size: 13.5px; color: var(--text-dark); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title}</div>
                                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                                 <span class="tag tag-cat-generic" style="font-size: 10px; padding: 2px 6px; background: var(--primary-light); color: var(--primary-color); font-weight: 600;">${t.category || 'General'}</span>
                                                 <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${t.priority}</span>
-                                                <span style="font-size: 11px; color: var(--text-muted);">Selesai pada: ${formatDate(t.createdAt)}</span>
+                                                ${renderTaskStatusBadge(t)}
+                                                <span style="font-size: 11px; color: var(--text-muted); marginLeft: 4px;">Dibuat: ${formatDate(t.createdAt)}</span>
                                             </div>
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="number" id="honor-input-${t.id}" class="honor-amount-input input task-honor-input" data-employee-id="${data.id}" placeholder="Nominal (Rp)" value="" min="0" oninput="window.updateEmployeeTotal('${data.id}')" style="width: 130px; text-align: right; font-weight: bold; padding: 6px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); outline: none;">
-                                            <button class="btn btn-primary btn-sm" style="padding: 6px 12px; font-size: 12px;" onclick="window.paySingleTask('${data.id}', '${data.name}', '${t.id}')">Bayar</button>
+                                            <input type="number" id="honor-input-${t.id}" class="honor-amount-input input task-honor-input" data-employee-id="${data.id}" placeholder="${inputPlaceholder}" value="" min="0" oninput="window.updateEmployeeTotal('${data.id}')" style="width: 140px; text-align: right; font-weight: bold; padding: 6px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); outline: none;">
+                                            <button class="btn ${btnClass} btn-sm" style="padding: 6px 12px; font-size: 12px;" onclick="window.paySingleTask('${data.id}', '${data.name}', '${t.id}')">${btnLabel}</button>
                                         </div>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
                                 <div style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">Total Terinput: <span id="emp-total-accumulated-${data.id}" style="color: var(--success);">Rp0</span></div>
-                                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px;" onclick='window.payAllTasksForEmployee("${data.id}", "${data.name}", ${JSON.stringify(completedTasksForEmp.map(t => t.id))})'>Bayar Semua</button>
+                                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px;" onclick='window.payAllTasksForEmployee("${data.id}", "${data.name}", ${JSON.stringify(tasksForEmp.map(t => t.id))})'>Bayar Semua</button>
                             </div>
                         </div>
                     </td>

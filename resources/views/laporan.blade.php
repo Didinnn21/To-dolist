@@ -205,6 +205,7 @@
                     <h1 class="view-title">Laporan Kinerja</h1>
                     <p class="view-subtitle">Analitik dan papan peringkat penyelesaian tugas karyawan.</p>
                 </div>
+                <div id="admin-export-container"></div>
             </div>
 
             <!-- Mobile switcher tabs -->
@@ -307,6 +308,7 @@
     <script src="{{ asset('js/db.js') }}"></script>
     <script src="{{ asset('js/auth.js') }}"></script>
     <script src="{{ asset('js/layout.js') }}"></script>
+    <script src="{{ asset('js/export-rekap.js') }}"></script>
     <script src="{{ asset('js/laporan.js') }}"></script>
 </body>
 

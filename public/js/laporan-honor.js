@@ -44,12 +44,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
     }
 
-    // Update overall payout across all employees (read-only sum of Paid tasks)
+    // Update overall payout across all employees (read-only sum of Paid/DP tasks)
     window.updateTotalPayout = () => {
         let total = 0;
         DB.tasks.forEach(t => {
-            if (t.status === "Paid") {
-                total += t.honorAmount || 0;
+            if ((t.honorAmount || 0) > 0) {
+                total += Number(t.honorAmount) || 0;
             }
         });
         const payoutEl = document.getElementById("total-payout");
@@ -79,19 +79,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return assignedIds.includes(emp.id);
             });
 
-            // Filter status tugas 'Paid'
-            const taskCount = empTasks.filter(t => t.status === "Paid").length;
+            // Filter tugas yang sudah dibayar (Lunas atau ada DP)
+            const paidTasks = empTasks.filter(t => t.status === "Paid" || (Number(t.honorAmount) || 0) > 0);
+            const taskCount = paidTasks.length;
 
             // Hitung akumulasi honor yang sudah dibayar
             let accumulatedHonor = 0;
-            empTasks.forEach(t => {
-                if (t.status === "Paid") {
-                    accumulatedHonor += t.honorAmount || 0;
-                }
+            paidTasks.forEach(t => {
+                accumulatedHonor += Number(t.honorAmount) || 0;
             });
 
             return {
                 ...emp,
+                paidTasks,
                 taskCount,
                 accumulatedHonor
             };
@@ -104,11 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let html = "";
         honorData.forEach(data => {
-            const tasksForEmp = DB.tasks.filter(t => {
-                const assignedIds = DB._parseAssignees(t.assignedTo);
-                return assignedIds.includes(data.id) && t.status === "Paid";
-            });
-
+            const tasksForEmp = data.paidTasks;
             const hasTasks = data.taskCount > 0;
 
             html += `
@@ -133,23 +129,32 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <tr class="tasks-expand-row hidden" id="tasks-row-${data.id}" style="background: var(--bg-card);">
                     <td colspan="4" style="padding: 16px 24px; border-bottom: 1px solid var(--border-color);">
                         <div class="expand-tasks-container" style="border-left: 3px solid var(--brand); padding-left: 16px;">
-                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Tugas yang Sudah Dibayar: ${data.name}</h4>
+                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Tugas yang Memiliki Pembayaran Honor/DP: ${data.name}</h4>
                             <div class="expand-tasks-list" style="display: flex; flex-direction: column; gap: 10px;">
-                                ${tasksForEmp.map(t => `
+                                ${tasksForEmp.map(t => {
+                                    let statusLabel = `<strong style="color:var(--success);">Lunas</strong>`;
+                                    if (t.status !== "Paid" && (t.status === "In Progress" || t.status === "Pending")) {
+                                        statusLabel = `<strong style="color:var(--brand);">DP Terbayar (Masih Proses)</strong>`;
+                                    } else if (t.status === "Completed") {
+                                        statusLabel = `<strong style="color:#0369a1;">DP Terbayar (Selesai)</strong>`;
+                                    }
+
+                                    return `
                                     <div class="expand-task-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-app); box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
                                         <div style="flex: 1; min-width: 0; margin-right: 16px;">
                                             <div style="font-weight: 600; font-size: 13.5px; color: var(--text-dark); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title}</div>
                                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                                 <span class="tag tag-cat-generic" style="font-size: 10px; padding: 2px 6px; background: var(--primary-light); color: var(--primary-color); font-weight: 600;">${t.category || 'General'}</span>
                                                 <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${t.priority}</span>
-                                                <span style="font-size: 11px; color: var(--text-muted);">Status: <strong style="color:var(--success);">Paid</strong></span>
+                                                <span style="font-size: 11px; color: var(--text-muted);">Status: ${statusLabel}</span>
                                             </div>
                                         </div>
                                         <div style="text-align: right;">
                                             <span style="font-weight: 700; color: var(--success); font-size: 14.5px;">${formatRupiah(t.honorAmount || 0)}</span>
                                         </div>
                                     </div>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
                                 <div style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">Total Terbayar: <span style="color: var(--success);">${formatRupiah(data.accumulatedHonor)}</span></div>
