@@ -63,8 +63,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const assignedIds = DB._parseAssignees(t.assignedTo);
                 return assignedIds.includes(emp.id);
             });
-            const selesai  = empTasks.filter(t => t.status === "Completed").length;
-            const berjalan = empTasks.filter(t => t.status !== "Completed").length;
+            const selesai  = empTasks.filter(t => t.status === "Completed" || t.status === "Paid").length;
+            const berjalan = empTasks.filter(t => t.status !== "Completed" && t.status !== "Paid").length;
             totalSelesai  += selesai;
             totalBerjalan += berjalan;
             return { ...emp, selesai, berjalan, total: empTasks.length };

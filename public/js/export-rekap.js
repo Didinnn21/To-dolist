@@ -317,7 +317,7 @@ const ExportRekap = {
                         let terminBreakdown = '';
                         if (t.paymentHistory && t.paymentHistory.length > 0) {
                             terminBreakdown = `<br><span style="font-size:9px; color:#475569; font-weight:normal;">` +
-                                t.paymentHistory.map(h => `Termin ${h.stage}: ${this.formatRupiah(h.amount)}`).join(' | ') +
+                                t.paymentHistory.map(h => `${h.note || ('Termin ' + h.stage)}: ${this.formatRupiah(h.amount)}`).join(' | ') +
                                 `</span>`;
                         }
 
