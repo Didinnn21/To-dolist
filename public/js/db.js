@@ -851,14 +851,30 @@ const DB = {
                 const currentHonor = task ? (Number(task.honorAmount) || 0) : 0;
                 const updatedHonorTotal = currentHonor + taskAmount;
 
-                await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({
-                        status: targetStatus,
-                        honor_amount: updatedHonorTotal,
-                        progress_updates: JSON.stringify(currentProgress)
-                    })
-                });
+                try {
+                    await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({
+                            status: targetStatus,
+                            honor_amount: updatedHonorTotal,
+                            progress_updates: JSON.stringify(currentProgress)
+                        })
+                    });
+                } catch (sbErr) {
+                    // Jika kolom progress_updates tidak/belum ada di tabel wf_tasks Supabase, fallback patch tanpa progress_updates
+                    if (sbErr.message && (sbErr.message.includes('progress_updates') || sbErr.message.includes('column'))) {
+                        console.warn('Kolom progress_updates belum ada di wf_tasks, fallback update status & honor_amount');
+                        await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({
+                                status: targetStatus,
+                                honor_amount: updatedHonorTotal
+                            })
+                        });
+                    } else {
+                        throw sbErr;
+                    }
+                }
 
                 if (task) {
                     task.status = targetStatus;
