@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const amount = parseInt(input.value) || 0;
 
         if (amount <= 0) {
-            window.showToast("Silakan masukkan nominal honor/DP yang valid (lebih dari 0).", "error");
+            window.showToast("Silakan masukkan nominal honor yang valid (lebih dari 0).", "error");
             return;
         }
 
@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        if (confirm(`Apakah Anda yakin ingin membayarkan total honor/DP sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${activeTaskIds.length} tugas kepada ${empName}?`)) {
+        if (confirm(`Apakah Anda yakin ingin membayarkan total honor sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${activeTaskIds.length} tugas kepada ${empName}?`)) {
             const success = await DB.saveHonorPayment(empId, empName, totalAmount, activeTaskIds, taskAmounts, false, taskStages);
             if (success) {
                 renderHonor(); // Refresh the table
@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">🔄 Masih Proses</span>`;
             }
         } else {
-            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 DP Terbayar: ${formatRupiah(honorAmt)} (${count}x Pembayaran)</span>`;
+            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 Termin Terbayar: ${formatRupiah(honorAmt)} (${count}x Pembayaran)</span>`;
         }
 
         return { badge, historyChips, count };

@@ -134,14 +134,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <tr class="tasks-expand-row hidden" id="tasks-row-${data.id}" style="background: var(--bg-card);">
                     <td colspan="4" style="padding: 16px 24px; border-bottom: 1px solid var(--border-color);">
                         <div class="expand-tasks-container" style="border-left: 3px solid var(--brand); padding-left: 16px;">
-                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Tugas yang Memiliki Pembayaran Honor/DP: ${data.name}</h4>
+                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Daftar Tugas yang Memiliki Pembayaran Honor: ${data.name}</h4>
                             <div class="expand-tasks-list" style="display: flex; flex-direction: column; gap: 10px;">
                                 ${tasksForEmp.map(t => {
                                     let statusLabel = `<strong style="color:var(--success);">Lunas</strong>`;
                                     if (t.status !== "Paid" && (t.status === "In Progress" || t.status === "Pending")) {
-                                        statusLabel = `<strong style="color:var(--brand);">DP Terbayar (Masih Proses)</strong>`;
+                                        statusLabel = `<strong style="color:var(--brand);">Termin Terbayar (Masih Proses)</strong>`;
                                     } else if (t.status === "Completed") {
-                                        statusLabel = `<strong style="color:#0369a1;">DP Terbayar (Selesai)</strong>`;
+                                        statusLabel = `<strong style="color:#0369a1;">Termin Terbayar (Selesai)</strong>`;
                                     }
 
                                     let historyChipsHtml = "";

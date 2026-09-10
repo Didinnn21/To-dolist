@@ -66,7 +66,7 @@
             <div class="view-header-row">
                 <div>
                     <h1 class="view-title">Sistem Honor</h1>
-                    <p class="view-subtitle">Pembayaran honor pelunasan maupun DP awal untuk tugas karyawan.</p>
+                    <p class="view-subtitle">Pembayaran honor pelunasan maupun termin bertahap untuk tugas karyawan.</p>
                 </div>
             </div>
 

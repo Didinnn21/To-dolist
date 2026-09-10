@@ -243,7 +243,7 @@ const ExportRekap = {
                         <div class="metric-value" style="color:#16a34a;">${data.totalCompleted} Tugas</div>
                     </td>
                     <td>
-                        <div class="metric-label">Total Honor & DP Terbayar</div>
+                        <div class="metric-label">Total Honor Terbayar</div>
                         <div class="metric-value" style="color:#16a34a;">${this.formatRupiah(data.totalHonorPaidout)}</div>
                     </td>
                 </tr>
@@ -260,7 +260,7 @@ const ExportRekap = {
                         <th style="text-align:center;">Total Tugas</th>
                         <th style="text-align:center;">Selesai</th>
                         <th style="text-align:center;">Masih Proses</th>
-                        <th style="text-align:right;">Total Honor/DP Dibayar</th>
+                        <th style="text-align:right;">Total Honor Dibayar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -289,7 +289,7 @@ const ExportRekap = {
                         <th>Prioritas</th>
                         <th>Penanggung Jawab</th>
                         <th style="text-align:center;">Status Tugas</th>
-                        <th style="text-align:right;">Nominal Honor / DP</th>
+                        <th style="text-align:right;">Nominal Honor</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -310,7 +310,7 @@ const ExportRekap = {
                             statusText = "✅ Selesai";
                             statusColor = "#0284c7";
                         } else if (amt > 0) {
-                            statusText = "💰 DP Terbayar";
+                            statusText = "💰 Termin Terbayar";
                             statusColor = "#2563eb";
                         }
 
