@@ -63,6 +63,17 @@ const DB = {
         }
     },
 
+    // ── Helper: normalize priority strings ─────────────────────────────────────
+    formatPriority(val) {
+        if (!val) return 'Sedang';
+        const isEn = (localStorage.getItem('dzhirasena_lang') === 'en');
+        const v = String(val).trim().toLowerCase();
+        if (v === 'high' || v === 'tinggi') return isEn ? 'High' : 'Tinggi';
+        if (v === 'medium' || v === 'sedang') return isEn ? 'Medium' : 'Sedang';
+        if (v === 'low' || v === 'rendah') return isEn ? 'Low' : 'Rendah';
+        return val;
+    },
+
     // ── Helper: map Supabase task row ke format frontend ───────────────────────
     _mapTask(t) {
         return {
@@ -71,7 +82,7 @@ const DB = {
             description: t.description,
             category: t.category,
             deadline: t.deadline,
-            priority: t.priority,
+            priority: this.formatPriority(t.priority),
             assignedTo: this._parseAssignees(t.assigned_to),
             createdBy: t.created_by || null,
             status: t.status,
@@ -109,12 +120,29 @@ const DB = {
         return `${description}\n\n--- Jurnal Credentials ---\nUsername: ${username}\nPassword: ${password}`;
     },
 
-    // ── INVALIDATE CACHE ───────────────────────────────────────────────────────
-    _invalidateCache() {
-        sessionStorage.removeItem('dzhirasena_db_cache');
+    // ── UPDATE & INVALIDATE CACHE (localStorage & sessionStorage) ──────────────
+    _updateCache() {
+        try {
+            const dataStr = JSON.stringify({
+                users:         this.users         || [],
+                tasks:         this.tasks         || [],
+                categories:    this.categories    || [],
+                notifications: this.notifications || [],
+                comments:      this.comments      || [],
+                _cachedAt:     Date.now()
+            });
+            localStorage.setItem('dzhirasena_db_cache', dataStr);
+            sessionStorage.setItem('dzhirasena_db_cache', dataStr);
+        } catch (e) {
+            console.warn('Gagal menyimpan cache:', e.message);
+        }
     },
 
-    // ── INIT: Ambil semua data dari Supabase ───────────────────────────────────
+    _invalidateCache() {
+        this._updateCache();
+    },
+
+    // ── INIT: Instant Load dari Cache + Background Sync (Stale-While-Revalidate) ──
     async init() {
         if (typeof Auth !== 'undefined' && Auth._ready) {
             await Auth._ready;
@@ -125,29 +153,39 @@ const DB = {
             return;
         }
 
-        // Cek session cache (5 menit)
-        const cachedDataStr = sessionStorage.getItem('dzhirasena_db_cache');
+        // 1. Cek cache lokal di localStorage / sessionStorage (Instant Load)
+        const cachedDataStr = localStorage.getItem('dzhirasena_db_cache') || sessionStorage.getItem('dzhirasena_db_cache');
+        let hasValidCache = false;
+
         if (cachedDataStr) {
             try {
                 const cachedData = JSON.parse(cachedDataStr);
-                const cacheAge   = Date.now() - (cachedData._cachedAt || 0);
-                if (cacheAge < 5 * 60 * 1000) {
-                    this.users         = cachedData.users         || [];
-                    this.tasks         = cachedData.tasks         || [];
-                    this.categories    = cachedData.categories    || [];
-                    this.notifications = cachedData.notifications || [];
-                    this.comments      = cachedData.comments      || [];
-                    this._checkDeadlineReminders();
-                    console.log('Data dimuat dari cache session.');
-                    return;
-                } else {
-                    sessionStorage.removeItem('dzhirasena_db_cache');
-                }
+                this.users         = cachedData.users         || [];
+                this.tasks         = cachedData.tasks         || [];
+                this.categories    = cachedData.categories    || [];
+                this.notifications = cachedData.notifications || [];
+                this.comments      = cachedData.comments      || [];
+                this._checkDeadlineReminders();
+                hasValidCache = true;
+                console.log('⚡ Data dimuat secara INSTAN dari cache.');
             } catch (e) {
+                localStorage.removeItem('dzhirasena_db_cache');
                 sessionStorage.removeItem('dzhirasena_db_cache');
             }
         }
 
+        // 2. Jika ada cache, lakukan sync latar belakang tanpa menghalangi UI!
+        if (hasValidCache) {
+            this._fetchFreshData().catch(() => {});
+            return; // Loading selesai secara instan (< 5ms)
+        }
+
+        // 3. Jika belum ada cache (cold start), tunggu fetch utama
+        await this._fetchFreshData();
+    },
+
+    // ── FETCH FRESH DATA DARI SUPABASE ───────────────────────────────────────
+    async _fetchFreshData() {
         try {
             const userId = Auth.currentUser ? Auth.currentUser.id : null;
 
@@ -174,23 +212,14 @@ const DB = {
             })) : [];
             this.comments = [];
 
-            // Simpan ke session cache
-            sessionStorage.setItem('dzhirasena_db_cache', JSON.stringify({
-                users:         this.users,
-                tasks:         this.tasks,
-                categories:    this.categories,
-                notifications: this.notifications,
-                comments:      this.comments,
-                _cachedAt:     Date.now()
-            }));
-
+            this._updateCache();
             this._checkDeadlineReminders();
-            console.log('✅ Data berhasil dimuat dari Supabase.');
+            console.log('✅ Background sync Supabase selesai.');
 
         } catch (err) {
             if (err.message === 'Unauthorized') return;
             console.error('Gagal memuat data:', err.message);
-            if (window.showToast) {
+            if (window.showToast && !localStorage.getItem('dzhirasena_db_cache')) {
                 window.showToast('Gagal memuat data dari server.', 'error');
             }
         }

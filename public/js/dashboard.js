@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!Auth.currentUser) return;
     Layout.init();
 
+    // Render Admin Export Rekapan buttons if Admin
+    if (typeof ExportRekap !== 'undefined') {
+        ExportRekap.renderExportButtons("admin-export-container");
+    }
+
     // 2. Local State variables
     const taskFilterCategory = document.getElementById("task-filter-category");
     const filterSortBtn = document.getElementById("filter-sort-btn");

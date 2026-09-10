@@ -22,6 +22,17 @@ const ExportRekap = {
         return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
     },
 
+    // Format Priority Helper
+    formatPriority(val) {
+        if (!val) return 'Sedang';
+        const isEn = (localStorage.getItem('dzhirasena_lang') === 'en');
+        const v = String(val).trim().toLowerCase();
+        if (v === 'high' || v === 'tinggi') return isEn ? 'High' : 'Tinggi';
+        if (v === 'medium' || v === 'sedang') return isEn ? 'Medium' : 'Sedang';
+        if (v === 'low' || v === 'rendah') return isEn ? 'Low' : 'Rendah';
+        return val;
+    },
+
     // Gather all comprehensive data across the system
     getReportData() {
         const users = DB.users || [];
@@ -85,276 +96,261 @@ const ExportRekap = {
         };
     },
 
-    // Build standard clean HTML report string
-    buildHtmlReport(data) {
+    // Build Word-compatible HTML string using pure tables (No flexbox)
+    buildWordHtml(data) {
         const dateFormatted = this.formatDate(data.generatedAt);
         const timeFormatted = data.generatedAt.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
         return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <title>Rekapitulasi Laporan Lengkap Tim - Dzhirasena</title>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Arial, sans-serif;
-                        color: #1e293b;
-                        background: #ffffff;
-                        line-height: 1.5;
-                        margin: 0;
-                        padding: 24px;
-                    }
-                    .report-header {
-                        border-bottom: 3px double #2563eb;
-                        padding-bottom: 16px;
-                        margin-bottom: 24px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: flex-end;
-                    }
-                    .company-title {
-                        font-size: 24px;
-                        font-weight: 800;
-                        color: #2563eb;
-                        letter-spacing: -0.5px;
-                        margin: 0;
-                    }
-                    .report-subtitle {
-                        font-size: 14px;
-                        font-weight: 700;
-                        color: #475569;
-                        margin: 4px 0 0 0;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    .report-meta {
-                        font-size: 11px;
-                        color: #64748b;
-                        text-align: right;
-                    }
-                    .section-title {
-                        font-size: 15px;
-                        font-weight: 700;
-                        color: #0f172a;
-                        margin: 24px 0 12px 0;
-                        padding-bottom: 6px;
-                        border-bottom: 1.5px solid #e2e8f0;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                    }
-                    .metrics-grid {
-                        display: table;
-                        width: 100%;
-                        margin-bottom: 20px;
-                    }
-                    .metric-box {
-                        display: table-cell;
-                        width: 25%;
-                        padding: 12px;
-                        background: #f8fafc;
-                        border: 1px solid #cbd5e1;
-                        border-radius: 6px;
-                        text-align: center;
-                    }
-                    .metric-box-title {
-                        font-size: 10px;
-                        font-weight: 700;
-                        color: #64748b;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    .metric-box-val {
-                        font-size: 18px;
-                        font-weight: 800;
-                        color: #1e293b;
-                        margin-top: 4px;
-                    }
-                    .val-blue { color: #2563eb; }
-                    .val-green { color: #16a34a; }
-                    .val-orange { color: #d97706; }
-                    
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-bottom: 24px;
-                        font-size: 12px;
-                    }
-                    th {
-                        background: #f1f5f9;
-                        color: #334155;
-                        font-weight: 700;
-                        text-transform: uppercase;
-                        font-size: 10px;
-                        letter-spacing: 0.5px;
-                        padding: 8px 10px;
-                        border: 1px solid #cbd5e1;
-                        text-align: left;
-                    }
-                    td {
-                        padding: 8px 10px;
-                        border: 1px solid #e2e8f0;
-                        vertical-align: middle;
-                    }
-                    tr:nth-child(even) { background: #f8fafc; }
-                    
-                    .badge {
-                        display: inline-block;
-                        padding: 2px 6px;
-                        border-radius: 4px;
-                        font-size: 10px;
-                        font-weight: 700;
-                    }
-                    .badge-proses { background: #fef3c7; color: #b45309; }
-                    .badge-dp { background: #eff6ff; color: #1d4ed8; }
-                    .badge-selesai { background: #e0f2fe; color: #0369a1; }
-                    .badge-lunas { background: #dcfce7; color: #15803d; }
-                    
-                    .footer-sign {
-                        margin-top: 40px;
-                        display: flex;
-                        justify-content: space-between;
-                        page-break-inside: avoid;
-                    }
-                    .sign-box {
-                        width: 200px;
-                        text-align: center;
-                        font-size: 12px;
-                    }
-                    .sign-space {
-                        height: 60px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="report-header">
-                    <div>
-                        <h1 class="company-title">DZHIRASENA MANAGEMENT</h1>
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+              xmlns:w="urn:schemas-microsoft-com:office:word" 
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="utf-8">
+            <title>Rekapitulasi Laporan Lengkap Tim - Dzhirasena</title>
+            <!--[if gte mso 9]>
+            <xml>
+                <w:WordDocument>
+                    <w:View>Print</w:View>
+                    <w:Zoom>100</w:Zoom>
+                    <w:DoNotOptimizeForBrowser/>
+                </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    color: #1e293b;
+                    background-color: #ffffff;
+                    margin: 0;
+                    padding: 20px;
+                }
+                .company-header-table {
+                    width: 100%;
+                    border-bottom: 3px double #2563eb;
+                    margin-bottom: 20px;
+                    padding-bottom: 10px;
+                }
+                .company-title {
+                    font-size: 22px;
+                    font-weight: bold;
+                    color: #2563eb;
+                    margin: 0;
+                }
+                .report-subtitle {
+                    font-size: 13px;
+                    font-weight: bold;
+                    color: #475569;
+                    margin-top: 4px;
+                }
+                .meta-text {
+                    font-size: 11px;
+                    color: #64748b;
+                    text-align: right;
+                }
+                .section-header {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #0f172a;
+                    background-color: #f1f5f9;
+                    padding: 8px 10px;
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                    border-left: 4px solid #2563eb;
+                }
+                .metrics-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                .metrics-table td {
+                    width: 25%;
+                    padding: 10px;
+                    background-color: #f8fafc;
+                    border: 1px solid #cbd5e1;
+                    text-align: center;
+                }
+                .metric-label {
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: #64748b;
+                    text-transform: uppercase;
+                }
+                .metric-value {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #1e293b;
+                    margin-top: 4px;
+                }
+                .data-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                    font-size: 11px;
+                }
+                .data-table th {
+                    background-color: #e2e8f0;
+                    color: #1e293b;
+                    font-weight: bold;
+                    padding: 8px;
+                    border: 1px solid #cbd5e1;
+                    text-align: left;
+                }
+                .data-table td {
+                    padding: 8px;
+                    border: 1px solid #e2e8f0;
+                    vertical-align: middle;
+                }
+                .badge {
+                    padding: 3px 6px;
+                    font-weight: bold;
+                    font-size: 10px;
+                }
+                .sign-table {
+                    width: 100%;
+                    margin-top: 40px;
+                    font-size: 12px;
+                }
+            </style>
+        </head>
+        <body>
+            <table class="company-header-table">
+                <tr>
+                    <td style="border:none;">
+                        <div class="company-title">DZHIRASENA MANAGEMENT</div>
                         <div class="report-subtitle">REKAPITULASI LAPORAN KINERJA, TUGAS & HONORARIUM (ALL ACCOUNTS)</div>
-                    </div>
-                    <div class="report-meta">
+                    </td>
+                    <td class="meta-text" style="border:none;">
                         <div>Tanggal Cetak: <strong>${dateFormatted} ${timeFormatted}</strong></div>
                         <div>Dicetak Oleh: <strong>${data.generatedBy} (Admin)</strong></div>
-                    </div>
-                </div>
+                    </td>
+                </tr>
+            </table>
 
-                <div class="section-title">📊 1. RINGKASAN EKSEKUTIF UTAMA</div>
-                <div class="metrics-grid">
-                    <div class="metric-box">
-                        <div class="metric-box-title">Total Akun Terdaftar</div>
-                        <div class="metric-box-val val-blue">${data.totalUsers} Akun (${data.totalStaff} Karyawan)</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="metric-box-title">Total Tugas Keseluruhan</div>
-                        <div class="metric-box-val">${data.totalTasks} Tugas</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="metric-box-title">Tugas Selesai / Lunas</div>
-                        <div class="metric-box-val val-green">${data.totalCompleted} Tugas</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="metric-box-title">Total Honor & DP Terbayar</div>
-                        <div class="metric-box-val val-green">${this.formatRupiah(data.totalHonorPaidout)}</div>
-                    </div>
-                </div>
+            <div class="section-header">1. RINGKASAN EKSEKUTIF UTAMA</div>
+            <table class="metrics-table">
+                <tr>
+                    <td>
+                        <div class="metric-label">Total Akun Terdaftar</div>
+                        <div class="metric-value" style="color:#2563eb;">${data.totalUsers} Akun (${data.totalStaff} Karyawan)</div>
+                    </td>
+                    <td>
+                        <div class="metric-label">Total Tugas Keseluruhan</div>
+                        <div class="metric-value">${data.totalTasks} Tugas</div>
+                    </td>
+                    <td>
+                        <div class="metric-label">Tugas Selesai / Lunas</div>
+                        <div class="metric-value" style="color:#16a34a;">${data.totalCompleted} Tugas</div>
+                    </td>
+                    <td>
+                        <div class="metric-label">Total Honor & DP Terbayar</div>
+                        <div class="metric-value" style="color:#16a34a;">${this.formatRupiah(data.totalHonorPaidout)}</div>
+                    </td>
+                </tr>
+            </table>
 
-                <div class="section-title">👥 2. REKAPITULASI KINERJA PER KARYAWAN</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:30px; text-align:center;">No</th>
-                            <th>Nama Karyawan</th>
-                            <th>Email</th>
-                            <th>Role / Jabatan</th>
-                            <th style="text-align:center;">Total Tugas</th>
-                            <th style="text-align:center;">Selesai</th>
-                            <th style="text-align:center;">Masih Proses</th>
-                            <th style="text-align:right;">Total Honor/DP Dibayar</th>
+            <div class="section-header">2. REKAPITULASI KINERJA PER KARYAWAN</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:30px; text-align:center;">No</th>
+                        <th>Nama Karyawan</th>
+                        <th>Email</th>
+                        <th>Role / Jabatan</th>
+                        <th style="text-align:center;">Total Tugas</th>
+                        <th style="text-align:center;">Selesai</th>
+                        <th style="text-align:center;">Masih Proses</th>
+                        <th style="text-align:right;">Total Honor/DP Dibayar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.employeeData.map((emp, i) => `
+                        <tr ${i % 2 === 1 ? 'style="background-color:#f8fafc;"' : ''}>
+                            <td style="text-align:center;">${i + 1}</td>
+                            <td><strong>${emp.name}</strong></td>
+                            <td>${emp.email}</td>
+                            <td>${emp.role}</td>
+                            <td style="text-align:center;">${emp.totalTasks}</td>
+                            <td style="text-align:center; font-weight:bold; color:#16a34a;">${emp.completed}</td>
+                            <td style="text-align:center; font-weight:bold; color:#d97706;">${emp.running}</td>
+                            <td style="text-align:right; font-weight:bold; color:#16a34a;">${this.formatRupiah(emp.honorAmt)}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${data.employeeData.map((emp, i) => `
-                            <tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div class="section-header">3. RINCIAN SELURUH TUGAS TIM</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:30px; text-align:center;">No</th>
+                        <th>Judul Tugas</th>
+                        <th>Kategori</th>
+                        <th>Prioritas</th>
+                        <th>Penanggung Jawab</th>
+                        <th style="text-align:center;">Status Tugas</th>
+                        <th style="text-align:right;">Nominal Honor / DP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${data.tasks.map((t, i) => {
+                        const assignees = DB._parseAssignees(t.assignedTo);
+                        const assigneeNames = assignees.map(id => {
+                            const u = DB.users.find(usr => usr.id === id);
+                            return u ? u.name : id;
+                        }).join(', ') || '-';
+
+                        const amt = Number(t.honorAmount) || 0;
+                        let statusText = "🔄 Masih Proses";
+                        let statusColor = "#d97706";
+                        if (t.status === "Paid") {
+                            statusText = "💵 Lunas";
+                            statusColor = "#16a34a";
+                        } else if (t.status === "Completed") {
+                            statusText = "✅ Selesai";
+                            statusColor = "#0284c7";
+                        } else if (amt > 0) {
+                            statusText = "💰 DP Terbayar";
+                            statusColor = "#2563eb";
+                        }
+
+                        return `
+                            <tr ${i % 2 === 1 ? 'style="background-color:#f8fafc;"' : ''}>
                                 <td style="text-align:center;">${i + 1}</td>
-                                <td><strong>${emp.name}</strong></td>
-                                <td>${emp.email}</td>
-                                <td>${emp.role}</td>
-                                <td style="text-align:center;">${emp.totalTasks}</td>
-                                <td style="text-align:center; font-weight:bold; color:#16a34a;">${emp.completed}</td>
-                                <td style="text-align:center; font-weight:bold; color:#d97706;">${emp.running}</td>
-                                <td style="text-align:right; font-weight:bold; color:#16a34a;">${this.formatRupiah(emp.honorAmt)}</td>
+                                <td><strong>${t.title}</strong></td>
+                                <td>${t.category || 'General'}</td>
+                                <td>${this.formatPriority(t.priority)}</td>
+                                <td>${assigneeNames}</td>
+                                <td style="text-align:center; font-weight:bold; color:${statusColor};">${statusText}</td>
+                                <td style="text-align:right; font-weight:bold; color:${amt > 0 ? '#16a34a' : '#64748b'};">${this.formatRupiah(amt)}</td>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
 
-                <div class="section-title">📋 3. RINCIAN SELURUH TUGAS TIM</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:30px; text-align:center;">No</th>
-                            <th>Judul Tugas</th>
-                            <th>Kategori</th>
-                            <th>Prioritas</th>
-                            <th>Penanggung Jawab</th>
-                            <th style="text-align:center;">Status Tugas</th>
-                            <th style="text-align:right;">Nominal Honor / DP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.tasks.map((t, i) => {
-                            const assignees = DB._parseAssignees(t.assignedTo);
-                            const assigneeNames = assignees.map(id => {
-                                const u = DB.users.find(usr => usr.id === id);
-                                return u ? u.name : id;
-                            }).join(', ') || '-';
-
-                            const amt = Number(t.honorAmount) || 0;
-                            let statusBadge = `<span class="badge badge-proses">🔄 Masih Proses</span>`;
-                            if (t.status === "Paid") {
-                                statusBadge = `<span class="badge badge-lunas">💵 Lunas</span>`;
-                            } else if (t.status === "Completed") {
-                                statusBadge = `<span class="badge badge-selesai">✅ Selesai</span>`;
-                            } else if (amt > 0) {
-                                statusBadge = `<span class="badge badge-dp">💰 DP Terbayar</span>`;
-                            }
-
-                            return `
-                                <tr>
-                                    <td style="text-align:center;">${i + 1}</td>
-                                    <td><strong>${t.title}</strong></td>
-                                    <td>${t.category || 'General'}</td>
-                                    <td>${t.priority}</td>
-                                    <td>${assigneeNames}</td>
-                                    <td style="text-align:center;">${statusBadge}</td>
-                                    <td style="text-align:right; font-weight:bold; color:${amt > 0 ? '#16a34a' : '#64748b'};">${this.formatRupiah(amt)}</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-
-                <div class="footer-sign">
-                    <div class="sign-box">
+            <table class="sign-table">
+                <tr>
+                    <td style="width:50%; text-align:center; border:none;">
                         <div>Mengetahui,</div>
                         <div><strong>Atasan / Supervisor</strong></div>
-                        <div class="sign-space"></div>
+                        <br><br><br><br>
                         <div>( ____________________ )</div>
-                    </div>
-                    <div class="sign-box">
+                    </td>
+                    <td style="width:50%; text-align:center; border:none;">
                         <div>Dibuat Oleh,</div>
                         <div><strong>Administrator System</strong></div>
-                        <div class="sign-space"></div>
+                        <br><br><br><br>
                         <div>( <strong>${data.generatedBy}</strong> )</div>
-                    </div>
-                </div>
-            </body>
-            </html>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
         `;
     },
 
-    // ── 1. EXPORT TO WORD (.docx) ─────────────────────────────────────────────
+    // ── 1. EXPORT TO WORD (.doc) ─────────────────────────────────────────────
     exportToWord() {
         if (!Auth.currentUser || Auth.currentUser.role !== "Admin") {
             if (window.showToast) window.showToast("Akses ditolak: Hanya Admin yang dapat mengunduh rekapan.", "error");
@@ -362,36 +358,15 @@ const ExportRekap = {
         }
 
         const data = this.getReportData();
-        const htmlContent = this.buildHtmlReport(data);
+        const htmlContent = this.buildWordHtml(data);
 
-        // Standard Office HTML format that MS Word opens directly as a docx document
-        const wordDocument = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-            <head>
-                <meta charset='utf-8'>
-                <title>Rekapan Laporan Lengkap</title>
-                <!--[if gte mso 9]>
-                <xml>
-                <w:WordDocument>
-                <w:View>Print</w:View>
-                <w:Zoom>100</w:Zoom>
-                <w:DoNotOptimizeForBrowser/>
-                </w:WordDocument>
-                </xml>
-                <![endif]-->
-            </head>
-            <body>
-                ${htmlContent}
-            </body>
-            </html>
-        `;
-
-        const blob = new Blob(['\ufeff', wordDocument], {
-            type: 'application/msword'
+        // Save as .doc format with UTF-8 byte order mark to prevent MS Word recovery warning
+        const blob = new Blob(['\ufeff', htmlContent], {
+            type: 'application/msword;charset=utf-8'
         });
 
         const dateStr = new Date().toISOString().slice(0, 10);
-        const fileName = `Rekapan_Laporan_Lengkap_Dzhirasena_${dateStr}.docx`;
+        const fileName = `Rekapan_Laporan_Lengkap_Dzhirasena_${dateStr}.doc`;
 
         const downloadLink = document.createElement("a");
         downloadLink.href = URL.createObjectURL(blob);
@@ -411,7 +386,7 @@ const ExportRekap = {
         }
 
         const data = this.getReportData();
-        const htmlContent = this.buildHtmlReport(data);
+        const htmlContent = this.buildWordHtml(data);
 
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
@@ -445,7 +420,7 @@ const ExportRekap = {
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Export Rekapan (Admin):</span>
                 <button class="btn btn-secondary btn-sm" id="btn-export-word" style="border-color: #2563eb; color: #2563eb; font-weight: 600; padding: 6px 12px; gap: 5px;">
-                    📄 Export Word (.docx)
+                    📄 Export Word (.doc)
                 </button>
                 <button class="btn btn-primary btn-sm" id="btn-export-pdf" style="background: #2563eb; font-weight: 600; padding: 6px 12px; gap: 5px;">
                     📑 Export PDF

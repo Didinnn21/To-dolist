@@ -61,6 +61,7 @@
                     <h1 class="view-title">Laporan Honor</h1>
                     <p class="view-subtitle">Rekapitulasi dan riwayat pembayaran honor tugas karyawan.</p>
                 </div>
+                <div id="admin-export-container"></div>
             </div>
 
             <!-- Mobile switcher tabs -->
@@ -108,8 +109,7 @@
     <script src="{{ asset('js/db.js') }}"></script>
     <script src="{{ asset('js/auth.js') }}"></script>
     <script src="{{ asset('js/layout.js') }}"></script>
-
-    <!-- Page Logic -->
+    <script src="{{ asset('js/export-rekap.js') }}"></script>
     <script src="{{ asset('js/laporan-honor.js') }}"></script>
 </body>
 

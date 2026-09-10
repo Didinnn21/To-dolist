@@ -25,6 +25,7 @@
                     <h1 class="view-title">Dashboard Kerja (Admin)</h1>
                     <p class="view-subtitle">Ringkasan aktivitas dan manajemen tugas tim Anda.</p>
                 </div>
+                <div id="admin-export-container"></div>
             </div>
 
             <!-- Metrics Grid -->
@@ -236,6 +237,7 @@
     <script src="{{ asset('js/db.js') }}"></script>
     <script src="{{ asset('js/auth.js') }}"></script>
     <script src="{{ asset('js/layout.js') }}"></script>
+    <script src="{{ asset('js/export-rekap.js') }}"></script>
 
     <!-- Page Logic -->
     <script src="{{ asset('js/dashboard.js') }}"></script>

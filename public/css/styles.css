@@ -774,9 +774,9 @@ body.dark-theme .login-screen {
   text-transform: uppercase; letter-spacing: .03em;
   display: inline-flex; align-items: center;
 }
-.tag-prio-tinggi { background: var(--prio-high-bg); color: var(--prio-high); }
-.tag-prio-sedang { background: var(--prio-med-bg);  color: var(--prio-med);  }
-.tag-prio-rendah { background: var(--prio-low-bg);  color: var(--prio-low);  }
+.tag-prio-tinggi, .tag-prio-high   { background: var(--prio-high-bg); color: var(--prio-high); }
+.tag-prio-sedang, .tag-prio-medium { background: var(--prio-med-bg);  color: var(--prio-med);  }
+.tag-prio-rendah, .tag-prio-low    { background: var(--prio-low-bg);  color: var(--prio-low);  }
 .tag-cat-generic { background: var(--bg-subtle); color: var(--text-secondary); }
 .tag-cat-finance  { background: #F5F3FF; color: #7C3AED; }
 .tag-cat-design   { background: var(--success-bg); color: #059669; }

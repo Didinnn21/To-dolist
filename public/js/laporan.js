@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!Auth.currentUser) return;
     Layout.init();
 
+    // Render Admin Export Rekapan buttons if Admin
+    if (typeof ExportRekap !== 'undefined') {
+        ExportRekap.renderExportButtons("admin-export-container");
+    }
+
     // 2. Protect Route: Only Atasan and Admin can access
     const isAtasan = Auth.currentUser.role === "Atasan";
     const isAdmin = Auth.currentUser.role === "Admin" || Auth.currentUser.role === "Project Manager";
