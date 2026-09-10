@@ -84,6 +84,12 @@ const DB = {
             ? progressUpdates.filter(u => u && u.isHonorPayment)
             : [];
 
+        let honorAmt = Number(t.honor_amount) || Number(t.honorAmount) || 0;
+        if (paymentHistory.length > 0) {
+            const historySum = paymentHistory.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+            if (historySum > honorAmt) honorAmt = historySum;
+        }
+
         return {
             id: t.id,
             title: t.title,
@@ -95,7 +101,7 @@ const DB = {
             createdBy: t.created_by || null,
             status: t.status,
             createdAt: t.created_at,
-            honorAmount: Number(t.honor_amount) || 0,
+            honorAmount: honorAmt,
             paymentHistory: paymentHistory,
             attachments: (() => {
                 try { return t.attachments ? JSON.parse(t.attachments) : []; }

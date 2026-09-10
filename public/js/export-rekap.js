@@ -33,6 +33,15 @@ const ExportRekap = {
         return val;
     },
 
+    getTaskHonorAmount(t) {
+        let amt = Number(t.honorAmount) || Number(t.honor_amount) || 0;
+        if (t.paymentHistory && Array.isArray(t.paymentHistory) && t.paymentHistory.length > 0) {
+            const historySum = t.paymentHistory.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+            if (historySum > amt) amt = historySum;
+        }
+        return amt;
+    },
+
     // Gather all comprehensive data across the system
     async getReportData() {
         if (!DB.users || DB.users.length === 0 || !DB.tasks || DB.tasks.length === 0) {
@@ -57,7 +66,7 @@ const ExportRekap = {
         let totalHonorPaidout = 0;
 
         tasks.forEach(t => {
-            const amt = Number(t.honorAmount) || 0;
+            const amt = this.getTaskHonorAmount(t);
             totalHonorPaidout += amt;
             if (t.status === "Completed") totalCompleted++;
             else if (t.status === "Paid") {
@@ -76,7 +85,7 @@ const ExportRekap = {
             const completed = empTasks.filter(t => t.status === "Completed" || t.status === "Paid").length;
             const running = empTasks.filter(t => t.status === "In Progress" || t.status === "Pending" || t.status === "Todo").length;
             let honorAmt = 0;
-            empTasks.forEach(t => { honorAmt += Number(t.honorAmount) || 0; });
+            empTasks.forEach(t => { honorAmt += this.getTaskHonorAmount(t); });
 
             return {
                 id: emp.id,
@@ -373,7 +382,7 @@ const ExportRekap = {
                             return u ? u.name : id;
                         }).join(', ') || '-';
 
-                        const amt = Number(t.honorAmount) || 0;
+                        const amt = this.getTaskHonorAmount(t);
                         let statusBadge = `<span class="badge-process">🔄 Masih Proses</span>`;
                         if (t.status === "Paid") {
                             statusBadge = `<span class="badge-paid">💵 Lunas</span>`;

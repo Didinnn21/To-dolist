@@ -49,13 +49,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
     }
 
+    // Helper: calculate task honor from honorAmount or paymentHistory sum
+    const getTaskHonor = (t) => {
+        let amt = Number(t.honorAmount) || Number(t.honor_amount) || 0;
+        if (t.paymentHistory && Array.isArray(t.paymentHistory) && t.paymentHistory.length > 0) {
+            const sum = t.paymentHistory.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+            if (sum > amt) amt = sum;
+        }
+        return amt;
+    };
+
     // Update overall payout across all employees (read-only sum of Paid/DP tasks)
     window.updateTotalPayout = () => {
         let total = 0;
         DB.tasks.forEach(t => {
-            if ((t.honorAmount || 0) > 0) {
-                total += Number(t.honorAmount) || 0;
-            }
+            total += getTaskHonor(t);
         });
         const payoutEl = document.getElementById("total-payout");
         if (payoutEl) {
@@ -80,18 +88,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Calculate paid tasks metrics per employee
         const honorData = employees.map(emp => {
             const empTasks = DB.tasks.filter(t => {
-                const assignedIds = DB._parseAssignees(t.assignedTo);
-                return assignedIds.includes(emp.id);
+                const assignedIds = DB._parseAssignees(t.assignedTo).map(String);
+                return assignedIds.includes(String(emp.id));
             });
 
-            // Filter tugas yang sudah dibayar (Lunas atau ada DP)
-            const paidTasks = empTasks.filter(t => t.status === "Paid" || (Number(t.honorAmount) || 0) > 0);
+            // Filter tugas yang sudah dibayar (Lunas atau ada pembayaran termin)
+            const paidTasks = empTasks.filter(t => t.status === "Paid" || getTaskHonor(t) > 0);
             const taskCount = paidTasks.length;
 
             // Hitung akumulasi honor yang sudah dibayar
             let accumulatedHonor = 0;
             paidTasks.forEach(t => {
-                accumulatedHonor += Number(t.honorAmount) || 0;
+                accumulatedHonor += getTaskHonor(t);
             });
 
             return {
@@ -163,7 +171,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                             ${historyChipsHtml}
                                         </div>
                                         <div style="text-align: right;">
-                                            <span style="font-weight: 700; color: var(--success); font-size: 14.5px;">${formatRupiah(t.honorAmount || 0)}</span>
+                                            <span style="font-weight: 700; color: var(--success); font-size: 14.5px;">${formatRupiah(getTaskHonor(t))}</span>
                                         </div>
                                     </div>
                                     `;
