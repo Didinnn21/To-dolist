@@ -935,24 +935,65 @@ const Layout = {
             }
         });
 
+        // ── INSTANT PRELOADER & FAST NAVIGATION LOADER ──────────────────────────
+        const preloadedUrls = new Set();
+        const preloadPage = (url) => {
+            if (!url || preloadedUrls.has(url) || url === window.location.pathname) return;
+            preloadedUrls.add(url);
+            const link = document.createElement("link");
+            link.rel = "prefetch";
+            link.href = url;
+            document.head.appendChild(link);
+        };
+
+        const navigateTo = (url) => {
+            if (!url || window.location.pathname === url) return;
+            let loader = document.getElementById("page-transition-loader");
+            if (!loader) {
+                loader = document.createElement("div");
+                loader.id = "page-transition-loader";
+                loader.style.cssText = "position:fixed;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg, #2563eb, #3b82f6, #60a5fa);z-index:99999;transition:width 0.15s ease-out;";
+                document.body.appendChild(loader);
+            }
+            loader.style.width = "70%";
+            window.location.href = url;
+        };
+
+        // Preload all main page routes immediately in idle time
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(() => {
+                Object.values(pages).forEach(url => preloadPage(url));
+            });
+        } else {
+            setTimeout(() => {
+                Object.values(pages).forEach(url => preloadPage(url));
+            }, 1000);
+        }
+
         // Desktop sidebar nav click (non-submenu items and submenu items)
         document.querySelectorAll(".sidebar-nav .nav-item:not(.has-submenu), .sidebar-nav .submenu-item").forEach(item => {
-            item.addEventListener("click", (e) => {
-                e.preventDefault();
-                const view = item.getAttribute("data-view");
-                if (view) {
-                    window.location.href = pages[view];
-                }
-            });
+            const view = item.getAttribute("data-view");
+            if (view && pages[view]) {
+                item.addEventListener("mouseenter", () => preloadPage(pages[view]), { passive: true });
+                item.addEventListener("touchstart", () => preloadPage(pages[view]), { passive: true });
+                item.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    navigateTo(pages[view]);
+                });
+            }
         });
 
         // Mobile bottom nav click
         document.querySelectorAll(".mobile-bottom-nav .bottom-nav-item").forEach(item => {
-            item.addEventListener("click", (e) => {
-                e.preventDefault();
-                const view = item.getAttribute("data-view");
-                window.location.href = pages[view];
-            });
+            const view = item.getAttribute("data-view");
+            if (view && pages[view]) {
+                item.addEventListener("mouseenter", () => preloadPage(pages[view]), { passive: true });
+                item.addEventListener("touchstart", () => preloadPage(pages[view]), { passive: true });
+                item.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    navigateTo(pages[view]);
+                });
+            }
         });
 
         // Global Logout triggers
@@ -969,8 +1010,9 @@ const Layout = {
         // Mobile profile trigger to setting page
         const mobProfile = document.getElementById("mobile-profile-trigger");
         if (mobProfile) {
+            mobProfile.addEventListener("mouseenter", () => preloadPage("/profile"), { passive: true });
             mobProfile.addEventListener("click", () => {
-                window.location.href = "/profile";
+                navigateTo("/profile");
             });
         }
 
