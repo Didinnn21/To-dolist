@@ -34,11 +34,22 @@ const ExportRekap = {
     },
 
     // Gather all comprehensive data across the system
-    getReportData() {
+    async getReportData() {
+        if (!DB.users || DB.users.length === 0 || !DB.tasks || DB.tasks.length === 0) {
+            if (window.showToast) window.showToast("Memuat data terbaru untuk rekapan...", "info");
+            await DB.init();
+            if (!DB.tasks || DB.tasks.length === 0) {
+                await DB._fetchFreshData().catch(() => {});
+            }
+        }
+
         const users = DB.users || [];
         const tasks = DB.tasks || [];
 
-        const staffUsers = users.filter(u => u.role !== "Admin" && u.role !== "Atasan" && u.role !== "Project Manager");
+        const staffUsers = users.filter(u => {
+            const role = (u.role || '').toLowerCase();
+            return role !== "admin" && role !== "atasan" && role !== "project manager";
+        });
         
         let totalCompleted = 0;
         let totalRunning = 0;
@@ -58,8 +69,8 @@ const ExportRekap = {
         // Map employee performance data
         const employeeData = staffUsers.map(emp => {
             const empTasks = tasks.filter(t => {
-                const assignedIds = DB._parseAssignees(t.assignedTo);
-                return assignedIds.includes(emp.id);
+                const assignedIds = DB._parseAssignees(t.assignedTo).map(String);
+                return assignedIds.includes(String(emp.id));
             });
 
             const completed = empTasks.filter(t => t.status === "Completed" || t.status === "Paid").length;
@@ -358,7 +369,7 @@ const ExportRekap = {
                     ${data.tasks.map((t, i) => {
                         const assignees = DB._parseAssignees(t.assignedTo);
                         const assigneeNames = assignees.map(id => {
-                            const u = DB.users.find(usr => usr.id === id);
+                            const u = DB.users.find(usr => String(usr.id) === String(id));
                             return u ? u.name : id;
                         }).join(', ') || '-';
 
@@ -428,13 +439,13 @@ const ExportRekap = {
     },
 
     // ── 1. EXPORT TO WORD (.doc) ─────────────────────────────────────────────
-    exportToWord() {
+    async exportToWord() {
         if (!Auth.currentUser || Auth.currentUser.role !== "Admin") {
             if (window.showToast) window.showToast("Akses ditolak: Hanya Admin yang dapat mengunduh rekapan.", "error");
             return;
         }
 
-        const data = this.getReportData();
+        const data = await this.getReportData();
         const htmlContent = this.buildWordHtml(data);
 
         // Save as .doc format with UTF-8 byte order mark to prevent MS Word recovery warning
@@ -456,13 +467,13 @@ const ExportRekap = {
     },
 
     // ── 2. EXPORT TO PDF (.pdf) ──────────────────────────────────────────────
-    exportToPdf() {
+    async exportToPdf() {
         if (!Auth.currentUser || Auth.currentUser.role !== "Admin") {
             if (window.showToast) window.showToast("Akses ditolak: Hanya Admin yang dapat mengunduh rekapan.", "error");
             return;
         }
 
-        const data = this.getReportData();
+        const data = await this.getReportData();
         const htmlContent = this.buildWordHtml(data);
 
         const printWindow = window.open('', '_blank');
