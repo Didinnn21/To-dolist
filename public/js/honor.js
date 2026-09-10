@@ -202,14 +202,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             const proses = empTasks.filter(t => t.status === "In Progress" || t.status === "Pending" || t.status === "Todo").length;
             const total = empTasks.length;
 
+            let paidHonor = 0;
+            empTasks.forEach(t => {
+                if (t.paymentHistory && t.paymentHistory.length > 0) {
+                    paidHonor += t.paymentHistory.reduce((s, p) => s + (Number(p.amount) || 0), 0);
+                } else if (t.status === "Paid") {
+                    paidHonor += Number(t.honorAmount) || 0;
+                }
+            });
+
             return {
                 ...emp,
                 empTasks,
                 selesai,
                 proses,
-                total
+                total,
+                paidHonor
             };
         });
+
+        window._lastHonorData = honorData;
 
         if (honorData.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 30px;">Tidak ada data karyawan.</td></tr>`;
@@ -242,7 +254,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             </div>
                         </div>
                     </td>
-                    <td style="text-align: right; font-weight: bold; color: var(--text-dark); font-size: 14px;" id="emp-total-preview-${data.id}">Rp0</td>
+                    <td style="text-align: right; font-weight: bold; font-size: 14px;" id="emp-total-preview-${data.id}">
+                        <span style="color: ${data.paidHonor > 0 ? '#15803d' : 'var(--text-muted)'};">${formatRupiah(data.paidHonor)}</span>
+                    </td>
                     <td style="text-align: center;">
                         <button class="btn btn-secondary btn-sm toggle-tasks-btn" data-employee-id="${data.id}" data-count="${data.total}" ${!isPayable ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                             Tampilkan Tugas (${data.total})
@@ -299,7 +313,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 }).join('')}
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
-                                <div style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">Total Terinput: <span id="emp-total-accumulated-${data.id}" style="color: var(--success);">Rp0</span></div>
+                                <div style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">Total Honor Terbayar: <span id="emp-total-accumulated-${data.id}" style="color: var(--success);">${formatRupiah(data.paidHonor)}</span></div>
                                 <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 12px;" onclick='window.payAllTasksForEmployee("${data.id}", "${data.name}", ${JSON.stringify(tasksForEmp.map(t => t.id))})'>Bayar Semua</button>
                             </div>
                         </div>
