@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Pay a single task individually (DP Awal or Pelunasan)
+    // Pay a single task individually (3 Termin System: Termin 1, Termin 2, Termin 3/Pelunasan)
     window.paySingleTask = async (empId, empName, taskId) => {
         const input = document.getElementById('honor-input-' + taskId);
         const amount = parseInt(input.value) || 0;
@@ -88,13 +88,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const task = DB.tasks.find(t => t.id === taskId);
         const taskTitle = task ? task.title : 'Tugas';
-        const isUnfinished = task && (task.status === "In Progress" || task.status === "Pending" || task.status === "Todo");
-        const paymentTypeLabel = isUnfinished ? "DP Awal" : "Pelunasan Honor";
-        const statusNote = isUnfinished ? "Status tugas akan tetap 'Dalam Proses' agar karyawan dapat menyelesaikannya." : "Status tugas akan diperbarui menjadi Lunas (Paid).";
+        const history = task && Array.isArray(task.paymentHistory) ? task.paymentHistory : [];
+        const currentStage = Math.min(history.length + 1, 3);
+        const isFinalStage = currentStage === 3;
 
-        if (confirm(`Apakah Anda yakin ingin membayarkan ${paymentTypeLabel} sebesar Rp ${amount.toLocaleString('id-ID')} untuk tugas "${taskTitle}" kepada ${empName}?\n\n(${statusNote})`)) {
+        const stageLabel = isFinalStage ? "Pelunasan (Termin 3)" : `Termin ${currentStage}`;
+        const statusNote = isFinalStage 
+            ? "Status tugas akan diperbarui menjadi Lunas (Paid)." 
+            : `Pembayaran ke-${currentStage} dari 3 termin. Status tugas tetap 'Dalam Proses' agar karyawan dapat melanjutkan pekerjaan.`;
+
+        if (confirm(`Apakah Anda yakin ingin membayarkan ${stageLabel} sebesar Rp ${amount.toLocaleString('id-ID')} untuk tugas "${taskTitle}" kepada ${empName}?\n\n(${statusNote})`)) {
             const taskAmounts = { [taskId]: amount };
-            const success = await DB.saveHonorPayment(empId, empName, amount, [taskId], taskAmounts);
+            const success = await DB.saveHonorPayment(empId, empName, amount, [taskId], taskAmounts, isFinalStage);
             if (success) {
                 renderHonor(); // Refresh the table
             }
@@ -130,25 +135,42 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Helper: render status badge for a task
-    function renderTaskStatusBadge(t) {
+    // Helper: render status badge & history for 3 Termin system
+    function renderTaskTerminBadge(t) {
+        const history = t.paymentHistory || [];
+        const count = history.length;
         const honorAmt = Number(t.honorAmount) || 0;
-        const status = t.status;
 
-        if (status === "Paid") {
-            return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💵 Lunas (Total: Rp${honorAmt.toLocaleString('id-ID')})</span>`;
+        let historyChips = "";
+        if (count > 0) {
+            historyChips = `
+                <div style="font-size: 11px; margin-top: 4px; color: var(--text-secondary); display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-weight: 700;">Riwayat Termin:</span>
+                    ${history.map(h => `
+                        <span style="background: var(--bg-subtle); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 10.5px;">
+                            Termin ${h.stage}: ${formatRupiah(h.amount)}
+                        </span>
+                    `).join('')}
+                </div>
+            `;
         }
-        if (status === "Completed") {
-            if (honorAmt > 0) {
-                return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (DP Paid: Rp${honorAmt.toLocaleString('id-ID')})</span>`;
+
+        let badge = "";
+        if (t.status === "Paid" || count >= 3) {
+            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💵 Lunas (${count > 0 ? count : 3}/3 Termin: ${formatRupiah(honorAmt)})</span>`;
+        } else if (count === 0) {
+            if (t.status === "Completed") {
+                badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (Termin 1 Ready)</span>`;
+            } else {
+                badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">🔄 Masih Proses (Termin 1 Ready)</span>`;
             }
-            return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (Menunggu Pelunasan)</span>`;
+        } else if (count === 1) {
+            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 Termin 1 Terbayar: ${formatRupiah(honorAmt)} (Termin 2 Ready)</span>`;
+        } else if (count === 2) {
+            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #6d28d9; background: #f3e8ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💳 Termin 2 Terbayar: ${formatRupiah(honorAmt)} (Termin 3 Pelunasan Ready)</span>`;
         }
-        // In Progress / Pending / Todo
-        if (honorAmt > 0) {
-            return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 DP Terbayar: Rp${honorAmt.toLocaleString('id-ID')} (Masih Proses)</span>`;
-        }
-        return `<span class="badge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">🔄 Masih Proses</span>`;
+
+        return { badge, historyChips, count };
     }
 
     // Main render function
@@ -226,13 +248,24 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <tr class="tasks-expand-row hidden" id="tasks-row-${data.id}" style="background: var(--bg-card);">
                     <td colspan="4" style="padding: 16px 24px; border-bottom: 1px solid var(--border-color);">
                         <div class="expand-tasks-container" style="border-left: 3px solid var(--brand); padding-left: 16px;">
-                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Daftar Tugas: ${data.name}</h4>
+                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Daftar Tugas (Maksimal 3 Termin Pembayaran): ${data.name}</h4>
                             <div class="expand-tasks-list" style="display: flex; flex-direction: column; gap: 10px;">
                                 ${tasksForEmp.map(t => {
-                                    const isUnfinished = (t.status === "In Progress" || t.status === "Pending" || t.status === "Todo");
-                                    const inputPlaceholder = isUnfinished ? "Nominal DP (Rp)" : "Nominal (Rp)";
-                                    const btnLabel = isUnfinished ? "Bayar DP" : (t.status === "Paid" ? "Bayar" : "Bayar");
-                                    const btnClass = isUnfinished ? "btn-primary" : "btn-primary";
+                                    const terminInfo = renderTaskTerminBadge(t);
+                                    const count = terminInfo.count;
+                                    const isFullyPaid = t.status === "Paid" || count >= 3;
+
+                                    let inputPlaceholder = `Nominal Termin ${count + 1} (Rp)`;
+                                    let btnLabel = `Bayar Termin ${count + 1}`;
+                                    if (count === 2) {
+                                        inputPlaceholder = "Nominal Pelunasan (Rp)";
+                                        btnLabel = "Pelunasan (Termin 3)";
+                                    }
+
+                                    if (isFullyPaid) {
+                                        inputPlaceholder = "Lunas (3/3 Termin)";
+                                        btnLabel = "Lunas";
+                                    }
 
                                     return `
                                     <div class="expand-task-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-app); box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
@@ -241,13 +274,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                                 <span class="tag tag-cat-generic" style="font-size: 10px; padding: 2px 6px; background: var(--primary-light); color: var(--primary-color); font-weight: 600;">${t.category || 'General'}</span>
                                                 <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${t.priority}</span>
-                                                ${renderTaskStatusBadge(t)}
-                                                <span style="font-size: 11px; color: var(--text-muted); marginLeft: 4px;">Dibuat: ${formatDate(t.createdAt)}</span>
+                                                ${terminInfo.badge}
+                                                <span style="font-size: 11px; color: var(--text-muted); margin-left: 4px;">Dibuat: ${formatDate(t.createdAt)}</span>
                                             </div>
+                                            ${terminInfo.historyChips}
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="number" id="honor-input-${t.id}" class="honor-amount-input input task-honor-input" data-employee-id="${data.id}" placeholder="${inputPlaceholder}" value="" min="0" oninput="window.updateEmployeeTotal('${data.id}')" style="width: 140px; text-align: right; font-weight: bold; padding: 6px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); outline: none;">
-                                            <button class="btn ${btnClass} btn-sm" style="padding: 6px 12px; font-size: 12px;" onclick="window.paySingleTask('${data.id}', '${data.name}', '${t.id}')">${btnLabel}</button>
+                                            <input type="number" id="honor-input-${t.id}" class="honor-amount-input input task-honor-input" data-employee-id="${data.id}" placeholder="${inputPlaceholder}" value="" min="0" ${isFullyPaid ? 'disabled style="opacity: 0.5; background: var(--bg-subtle);"' : ''} oninput="window.updateEmployeeTotal('${data.id}')" style="width: 155px; text-align: right; font-weight: bold; padding: 6px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); outline: none;">
+                                            <button class="btn btn-primary btn-sm" style="padding: 6px 12px; font-size: 12px;" ${isFullyPaid ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} onclick="window.paySingleTask('${data.id}', '${data.name}', '${t.id}')">${btnLabel}</button>
                                         </div>
                                     </div>
                                     `;

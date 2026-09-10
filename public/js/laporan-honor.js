@@ -144,15 +144,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                                         statusLabel = `<strong style="color:#0369a1;">DP Terbayar (Selesai)</strong>`;
                                     }
 
+                                    let historyChipsHtml = "";
+                                    if (t.paymentHistory && t.paymentHistory.length > 0) {
+                                        historyChipsHtml = `<div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">` +
+                                            t.paymentHistory.map(h => `<span style="font-size: 10px; font-weight: 600; color: #1e40af; background: #e0e7ff; padding: 1px 6px; border-radius: 4px;">Termin ${h.stage}: ${formatRupiah(h.amount)}</span>`).join('') +
+                                            `</div>`;
+                                    }
+
                                     return `
                                     <div class="expand-task-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-app); box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
                                         <div style="flex: 1; min-width: 0; margin-right: 16px;">
                                             <div style="font-weight: 600; font-size: 13.5px; color: var(--text-dark); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title}</div>
                                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                                 <span class="tag tag-cat-generic" style="font-size: 10px; padding: 2px 6px; background: var(--primary-light); color: var(--primary-color); font-weight: 600;">${t.category || 'General'}</span>
-                                                <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${t.priority}</span>
+                                                <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${DB.formatPriority(t.priority)}</span>
                                                 <span style="font-size: 11px; color: var(--text-muted);">Status: ${statusLabel}</span>
                                             </div>
+                                            ${historyChipsHtml}
                                         </div>
                                         <div style="text-align: right;">
                                             <span style="font-weight: 700; color: var(--success); font-size: 14.5px;">${formatRupiah(t.honorAmount || 0)}</span>

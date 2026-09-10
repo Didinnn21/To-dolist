@@ -76,6 +76,14 @@ const DB = {
 
     // ── Helper: map Supabase task row ke format frontend ───────────────────────
     _mapTask(t) {
+        let progressUpdates = [];
+        try { progressUpdates = t.progress_updates ? JSON.parse(t.progress_updates) : []; }
+        catch { progressUpdates = []; }
+
+        const paymentHistory = Array.isArray(progressUpdates)
+            ? progressUpdates.filter(u => u && u.isHonorPayment)
+            : [];
+
         return {
             id: t.id,
             title: t.title,
@@ -87,15 +95,13 @@ const DB = {
             createdBy: t.created_by || null,
             status: t.status,
             createdAt: t.created_at,
-            honorAmount: t.honor_amount || 0,
+            honorAmount: Number(t.honor_amount) || 0,
+            paymentHistory: paymentHistory,
             attachments: (() => {
                 try { return t.attachments ? JSON.parse(t.attachments) : []; }
                 catch { return []; }
             })(),
-            progressUpdates: (() => {
-                try { return t.progress_updates ? JSON.parse(t.progress_updates) : []; }
-                catch { return []; }
-            })()
+            progressUpdates: progressUpdates
         };
     },
 
@@ -787,22 +793,40 @@ const DB = {
     // HONOR PAYMENT
     // ==========================================================================
 
-    async saveHonorPayment(employeeId, employeeName, amount, completedTaskIds, taskAmounts) {
+    async saveHonorPayment(employeeId, employeeName, amount, completedTaskIds, taskAmounts, forceMarkPaid = false) {
         this._invalidateCache();
         try {
-            let isDpPayment = false;
-            // Update setiap task: honor_amount & status
+            let lastStagePaid = 1;
+            // Update setiap task: honor_amount & status & paymentHistory
             for (const taskId of completedTaskIds) {
                 const taskAmount = taskAmounts ? Number(taskAmounts[taskId]) || 0 : 0;
                 const task = this.tasks.find(t => t.id === taskId);
                 
-                let targetStatus = 'Paid';
+                let currentHistory = task && Array.isArray(task.paymentHistory) ? [...task.paymentHistory] : [];
+                let currentProgress = task && Array.isArray(task.progressUpdates) ? [...task.progressUpdates] : [];
+
+                const stageNum = Math.min(currentHistory.length + 1, 3);
+                lastStagePaid = stageNum;
+
+                const paymentEntry = {
+                    id: `pay-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+                    stage: stageNum,
+                    amount: taskAmount,
+                    date: new Date().toISOString(),
+                    paidBy: Auth.currentUser ? Auth.currentUser.name : 'Atasan',
+                    note: stageNum === 3 ? 'Pelunasan (Termin 3)' : `Termin ${stageNum}`,
+                    isHonorPayment: true
+                };
+
+                currentHistory.push(paymentEntry);
+                currentProgress.push(paymentEntry);
+
+                let targetStatus = 'In Progress';
                 if (task) {
-                    if (task.status === 'In Progress' || task.status === 'Pending' || task.status === 'Todo') {
-                        targetStatus = 'In Progress'; // DP Awal: Tetap In Progress agar staf bisa selesaikan
-                        isDpPayment = true;
+                    if (stageNum >= 3 || forceMarkPaid || task.status === 'Completed') {
+                        targetStatus = 'Paid'; // Pelunasan (Termin 3) atau diselesaikan
                     } else {
-                        targetStatus = 'Paid'; // Pelunasan tugas selesai
+                        targetStatus = 'In Progress'; // Termin 1 & 2: Tetap In Progress
                     }
                 }
 
@@ -811,12 +835,18 @@ const DB = {
 
                 await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
                     method: 'PATCH',
-                    body: JSON.stringify({ status: targetStatus, honor_amount: updatedHonorTotal })
+                    body: JSON.stringify({
+                        status: targetStatus,
+                        honor_amount: updatedHonorTotal,
+                        progress_updates: JSON.stringify(currentProgress)
+                    })
                 });
 
                 if (task) {
                     task.status = targetStatus;
                     task.honorAmount = updatedHonorTotal;
+                    task.paymentHistory = currentHistory;
+                    task.progressUpdates = currentProgress;
                 }
             }
 
@@ -840,8 +870,8 @@ const DB = {
                 console.warn('Gagal simpan honor record (tabel mungkin belum ada):', err.message);
             });
 
-            const paymentTypeMsg = isDpPayment ? 'DP Honor' : 'Honor';
-            if (window.showToast) window.showToast(`${paymentTypeMsg} Rp${Number(amount).toLocaleString('id-ID')} untuk ${employeeName} berhasil dibayarkan.`, 'success');
+            const stageLabel = lastStagePaid === 3 ? 'Pelunasan (Termin 3)' : `Termin ${lastStagePaid}`;
+            if (window.showToast) window.showToast(`Pembayaran Honor ${stageLabel} Rp${Number(amount).toLocaleString('id-ID')} untuk ${employeeName} berhasil dibayarkan.`, 'success');
             return { success: true };
         } catch (err) {
             console.error('Gagal memproses pembayaran honor:', err.message);

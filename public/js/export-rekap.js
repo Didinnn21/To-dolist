@@ -314,6 +314,13 @@ const ExportRekap = {
                             statusColor = "#2563eb";
                         }
 
+                        let terminBreakdown = '';
+                        if (t.paymentHistory && t.paymentHistory.length > 0) {
+                            terminBreakdown = `<br><span style="font-size:9px; color:#475569; font-weight:normal;">` +
+                                t.paymentHistory.map(h => `Termin ${h.stage}: ${this.formatRupiah(h.amount)}`).join(' | ') +
+                                `</span>`;
+                        }
+
                         return `
                             <tr ${i % 2 === 1 ? 'style="background-color:#f8fafc;"' : ''}>
                                 <td style="text-align:center;">${i + 1}</td>
@@ -322,7 +329,9 @@ const ExportRekap = {
                                 <td>${this.formatPriority(t.priority)}</td>
                                 <td>${assigneeNames}</td>
                                 <td style="text-align:center; font-weight:bold; color:${statusColor};">${statusText}</td>
-                                <td style="text-align:right; font-weight:bold; color:${amt > 0 ? '#16a34a' : '#64748b'};">${this.formatRupiah(amt)}</td>
+                                <td style="text-align:right; font-weight:bold; color:${amt > 0 ? '#16a34a' : '#64748b'};">
+                                    ${this.formatRupiah(amt)}${terminBreakdown}
+                                </td>
                             </tr>
                         `;
                     }).join('')}
