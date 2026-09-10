@@ -76,9 +76,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     };
 
-    // Pay a single task individually (3 Termin System: Termin 1, Termin 2, Termin 3/Pelunasan)
+    // Pay a single task individually with selected payment stage (Pembayaran 1, 2, 3, etc. or Pelunasan)
     window.paySingleTask = async (empId, empName, taskId) => {
         const input = document.getElementById('honor-input-' + taskId);
+        const typeSelect = document.getElementById('honor-type-' + taskId);
         const amount = parseInt(input.value) || 0;
 
         if (amount <= 0) {
@@ -88,18 +89,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const task = DB.tasks.find(t => t.id === taskId);
         const taskTitle = task ? task.title : 'Tugas';
-        const history = task && Array.isArray(task.paymentHistory) ? task.paymentHistory : [];
-        const currentStage = Math.min(history.length + 1, 3);
-        const isFinalStage = currentStage === 3;
+        const selectedStage = typeSelect ? typeSelect.value : '1';
 
-        const stageLabel = isFinalStage ? "Pelunasan (Termin 3)" : `Termin ${currentStage}`;
+        const isFinalStage = (selectedStage === 'pelunasan');
+        const stageLabel = isFinalStage ? "Pelunasan (Lunas)" : `Pembayaran ${selectedStage} (Termin ${selectedStage})`;
         const statusNote = isFinalStage 
             ? "Status tugas akan diperbarui menjadi Lunas (Paid)." 
-            : `Pembayaran ke-${currentStage} dari 3 termin. Status tugas tetap 'Dalam Proses' agar karyawan dapat melanjutkan pekerjaan.`;
+            : `Pembayaran ${stageLabel}. Status tugas tetap 'Dalam Proses' agar karyawan dapat melanjutkan pekerjaan.`;
 
         if (confirm(`Apakah Anda yakin ingin membayarkan ${stageLabel} sebesar Rp ${amount.toLocaleString('id-ID')} untuk tugas "${taskTitle}" kepada ${empName}?\n\n(${statusNote})`)) {
             const taskAmounts = { [taskId]: amount };
-            const success = await DB.saveHonorPayment(empId, empName, amount, [taskId], taskAmounts, isFinalStage);
+            const taskStages = { [taskId]: selectedStage };
+            const success = await DB.saveHonorPayment(empId, empName, amount, [taskId], taskAmounts, isFinalStage, taskStages);
             if (success) {
                 renderHonor(); // Refresh the table
             }
@@ -109,14 +110,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Pay all tasks with inputted amounts > 0 for a specific employee
     window.payAllTasksForEmployee = async (empId, empName, taskIds) => {
         const taskAmounts = {};
+        const taskStages = {};
         const activeTaskIds = [];
         let totalAmount = 0;
 
         taskIds.forEach(taskId => {
             const input = document.getElementById('honor-input-' + taskId);
+            const typeSelect = document.getElementById('honor-type-' + taskId);
             const amount = parseInt(input.value) || 0;
             if (amount > 0) {
                 taskAmounts[taskId] = amount;
+                taskStages[taskId] = typeSelect ? typeSelect.value : '1';
                 activeTaskIds.push(taskId);
                 totalAmount += amount;
             }
@@ -128,14 +132,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (confirm(`Apakah Anda yakin ingin membayarkan total honor/DP sebesar Rp ${totalAmount.toLocaleString('id-ID')} untuk ${activeTaskIds.length} tugas kepada ${empName}?`)) {
-            const success = await DB.saveHonorPayment(empId, empName, totalAmount, activeTaskIds, taskAmounts);
+            const success = await DB.saveHonorPayment(empId, empName, totalAmount, activeTaskIds, taskAmounts, false, taskStages);
             if (success) {
                 renderHonor(); // Refresh the table
             }
         }
     };
 
-    // Helper: render status badge & history for 3 Termin system
+    // Helper: render status badge & history for multi-termin payments
     function renderTaskTerminBadge(t) {
         const history = t.paymentHistory || [];
         const count = history.length;
@@ -145,10 +149,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (count > 0) {
             historyChips = `
                 <div style="font-size: 11px; margin-top: 4px; color: var(--text-secondary); display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                    <span style="font-weight: 700;">Riwayat Termin:</span>
+                    <span style="font-weight: 700;">Riwayat Pembayaran:</span>
                     ${history.map(h => `
                         <span style="background: var(--bg-subtle); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 10.5px;">
-                            Termin ${h.stage}: ${formatRupiah(h.amount)}
+                            ${h.note || ('Termin ' + h.stage)}: ${formatRupiah(h.amount)}
                         </span>
                     `).join('')}
                 </div>
@@ -156,18 +160,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         let badge = "";
-        if (t.status === "Paid" || count >= 3) {
-            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💵 Lunas (${count > 0 ? count : 3}/3 Termin: ${formatRupiah(honorAmt)})</span>`;
+        if (t.status === "Paid") {
+            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💵 Lunas (${formatRupiah(honorAmt)})</span>`;
         } else if (count === 0) {
             if (t.status === "Completed") {
-                badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (Termin 1 Ready)</span>`;
+                badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #0369a1; background: #e0f2fe; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">✅ Selesai (Siap Dibayar)</span>`;
             } else {
-                badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">🔄 Masih Proses (Termin 1 Ready)</span>`;
+                badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">🔄 Masih Proses</span>`;
             }
-        } else if (count === 1) {
-            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 Termin 1 Terbayar: ${formatRupiah(honorAmt)} (Termin 2 Ready)</span>`;
-        } else if (count === 2) {
-            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #6d28d9; background: #f3e8ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💳 Termin 2 Terbayar: ${formatRupiah(honorAmt)} (Termin 3 Pelunasan Ready)</span>`;
+        } else {
+            badge = `<span class="badge" style="font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">💰 DP Terbayar: ${formatRupiah(honorAmt)} (${count}x Pembayaran)</span>`;
         }
 
         return { badge, historyChips, count };
@@ -248,24 +250,28 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <tr class="tasks-expand-row hidden" id="tasks-row-${data.id}" style="background: var(--bg-card);">
                     <td colspan="4" style="padding: 16px 24px; border-bottom: 1px solid var(--border-color);">
                         <div class="expand-tasks-container" style="border-left: 3px solid var(--brand); padding-left: 16px;">
-                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Daftar Tugas (Maksimal 3 Termin Pembayaran): ${data.name}</h4>
+                            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-dark);">Daftar Tugas Karyawan: ${data.name}</h4>
                             <div class="expand-tasks-list" style="display: flex; flex-direction: column; gap: 10px;">
                                 ${tasksForEmp.map(t => {
                                     const terminInfo = renderTaskTerminBadge(t);
                                     const count = terminInfo.count;
-                                    const isFullyPaid = t.status === "Paid" || count >= 3;
+                                    const isFullyPaid = t.status === "Paid";
+                                    const defaultStage = t.status === "Completed" ? "pelunasan" : String(count + 1);
 
-                                    let inputPlaceholder = `Nominal Termin ${count + 1} (Rp)`;
-                                    let btnLabel = `Bayar Termin ${count + 1}`;
-                                    if (count === 2) {
-                                        inputPlaceholder = "Nominal Pelunasan (Rp)";
-                                        btnLabel = "Pelunasan (Termin 3)";
-                                    }
+                                    const stagesList = [
+                                        { val: "1", label: "Pembayaran 1 (Termin 1)" },
+                                        { val: "2", label: "Pembayaran 2 (Termin 2)" },
+                                        { val: "3", label: "Pembayaran 3 (Termin 3)" },
+                                        { val: "4", label: "Pembayaran 4 (Termin 4)" },
+                                        { val: "5", label: "Pembayaran 5 (Termin 5)" },
+                                        { val: "pelunasan", label: "Pembayaran Pelunasan (Lunas)" }
+                                    ];
 
-                                    if (isFullyPaid) {
-                                        inputPlaceholder = "Lunas (3/3 Termin)";
-                                        btnLabel = "Lunas";
-                                    }
+                                    const selectOptionsHtml = isFullyPaid 
+                                        ? `<option value="pelunasan" selected>Pembayaran Pelunasan (Lunas)</option>` 
+                                        : stagesList.map(opt => `
+                                            <option value="${opt.val}" ${opt.val === defaultStage ? 'selected' : ''}>${opt.label}</option>
+                                        `).join('');
 
                                     return `
                                     <div class="expand-task-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-app); box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
@@ -273,15 +279,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                                             <div style="font-weight: 600; font-size: 13.5px; color: var(--text-dark); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.title}</div>
                                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                                 <span class="tag tag-cat-generic" style="font-size: 10px; padding: 2px 6px; background: var(--primary-light); color: var(--primary-color); font-weight: 600;">${t.category || 'General'}</span>
-                                                <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${t.priority}</span>
+                                                <span class="tag tag-prio-${t.priority.toLowerCase()}" style="font-size: 10px; padding: 2px 6px;">${DB.formatPriority(t.priority)}</span>
                                                 ${terminInfo.badge}
                                                 <span style="font-size: 11px; color: var(--text-muted); margin-left: 4px;">Dibuat: ${formatDate(t.createdAt)}</span>
                                             </div>
                                             ${terminInfo.historyChips}
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <input type="number" id="honor-input-${t.id}" class="honor-amount-input input task-honor-input" data-employee-id="${data.id}" placeholder="${inputPlaceholder}" value="" min="0" ${isFullyPaid ? 'disabled style="opacity: 0.5; background: var(--bg-subtle);"' : ''} oninput="window.updateEmployeeTotal('${data.id}')" style="width: 155px; text-align: right; font-weight: bold; padding: 6px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); outline: none;">
-                                            <button class="btn btn-primary btn-sm" style="padding: 6px 12px; font-size: 12px;" ${isFullyPaid ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} onclick="window.paySingleTask('${data.id}', '${data.name}', '${t.id}')">${btnLabel}</button>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                            <select id="honor-type-${t.id}" class="select task-honor-type" ${isFullyPaid ? 'disabled style="opacity: 0.6; cursor: not-allowed;"' : ''} style="padding: 6px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); font-weight: 600; cursor: pointer; color: var(--text-dark); outline: none;">
+                                                ${selectOptionsHtml}
+                                            </select>
+                                            <input type="number" id="honor-input-${t.id}" class="honor-amount-input input task-honor-input" data-employee-id="${data.id}" placeholder="Nominal (Rp)" value="" min="0" ${isFullyPaid ? 'disabled style="opacity: 0.5; background: var(--bg-subtle);"' : ''} oninput="window.updateEmployeeTotal('${data.id}')" style="width: 130px; text-align: right; font-weight: bold; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-card); outline: none;">
+                                            <button class="btn btn-primary btn-sm" style="padding: 6px 12px; font-size: 12px; font-weight: 600;" ${isFullyPaid ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} onclick="window.paySingleTask('${data.id}', '${data.name}', '${t.id}')">Bayar</button>
                                         </div>
                                     </div>
                                     `;

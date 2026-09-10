@@ -793,10 +793,10 @@ const DB = {
     // HONOR PAYMENT
     // ==========================================================================
 
-    async saveHonorPayment(employeeId, employeeName, amount, completedTaskIds, taskAmounts, forceMarkPaid = false) {
+    async saveHonorPayment(employeeId, employeeName, amount, completedTaskIds, taskAmounts, forceMarkPaid = false, taskStages = {}) {
         this._invalidateCache();
         try {
-            let lastStagePaid = 1;
+            let lastStageNote = "";
             // Update setiap task: honor_amount & status & paymentHistory
             for (const taskId of completedTaskIds) {
                 const taskAmount = taskAmounts ? Number(taskAmounts[taskId]) || 0 : 0;
@@ -805,8 +805,20 @@ const DB = {
                 let currentHistory = task && Array.isArray(task.paymentHistory) ? [...task.paymentHistory] : [];
                 let currentProgress = task && Array.isArray(task.progressUpdates) ? [...task.progressUpdates] : [];
 
-                const stageNum = Math.min(currentHistory.length + 1, 3);
-                lastStagePaid = stageNum;
+                const stageType = (taskStages && taskStages[taskId]) ? String(taskStages[taskId]) : null;
+                let isPelunasan = (stageType === 'pelunasan') || forceMarkPaid;
+                
+                let stageNum = currentHistory.length + 1;
+                let noteLabel = `Pembayaran ${stageNum} (Termin ${stageNum})`;
+
+                if (isPelunasan) {
+                    noteLabel = 'Pelunasan (Lunas)';
+                } else if (stageType && !isNaN(parseInt(stageType))) {
+                    stageNum = parseInt(stageType);
+                    noteLabel = `Pembayaran ${stageNum} (Termin ${stageNum})`;
+                }
+
+                lastStageNote = noteLabel;
 
                 const paymentEntry = {
                     id: `pay-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
@@ -814,7 +826,7 @@ const DB = {
                     amount: taskAmount,
                     date: new Date().toISOString(),
                     paidBy: Auth.currentUser ? Auth.currentUser.name : 'Atasan',
-                    note: stageNum === 3 ? 'Pelunasan (Termin 3)' : `Termin ${stageNum}`,
+                    note: noteLabel,
                     isHonorPayment: true
                 };
 
@@ -823,10 +835,10 @@ const DB = {
 
                 let targetStatus = 'In Progress';
                 if (task) {
-                    if (stageNum >= 3 || forceMarkPaid || task.status === 'Completed') {
-                        targetStatus = 'Paid'; // Pelunasan (Termin 3) atau diselesaikan
+                    if (isPelunasan) {
+                        targetStatus = 'Paid'; // Pelunasan: Ubah status menjadi Lunas
                     } else {
-                        targetStatus = 'In Progress'; // Termin 1 & 2: Tetap In Progress
+                        targetStatus = 'In Progress'; // Pembayaran Termin 1, 2, 3, dst: Status tetap Dalam Proses
                     }
                 }
 
@@ -870,8 +882,8 @@ const DB = {
                 console.warn('Gagal simpan honor record (tabel mungkin belum ada):', err.message);
             });
 
-            const stageLabel = lastStagePaid === 3 ? 'Pelunasan (Termin 3)' : `Termin ${lastStagePaid}`;
-            if (window.showToast) window.showToast(`Pembayaran Honor ${stageLabel} Rp${Number(amount).toLocaleString('id-ID')} untuk ${employeeName} berhasil dibayarkan.`, 'success');
+            const stageInfoText = lastStageNote ? ` (${lastStageNote})` : '';
+            if (window.showToast) window.showToast(`Pembayaran Honor${stageInfoText} Rp${Number(amount).toLocaleString('id-ID')} untuk ${employeeName} berhasil dibayarkan.`, 'success');
             return { success: true };
         } catch (err) {
             console.error('Gagal memproses pembayaran honor:', err.message);

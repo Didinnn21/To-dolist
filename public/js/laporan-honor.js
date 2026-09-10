@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     let historyChipsHtml = "";
                                     if (t.paymentHistory && t.paymentHistory.length > 0) {
                                         historyChipsHtml = `<div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">` +
-                                            t.paymentHistory.map(h => `<span style="font-size: 10px; font-weight: 600; color: #1e40af; background: #e0e7ff; padding: 1px 6px; border-radius: 4px;">Termin ${h.stage}: ${formatRupiah(h.amount)}</span>`).join('') +
+                                            t.paymentHistory.map(h => `<span style="font-size: 10px; font-weight: 600; color: #1e40af; background: #e0e7ff; padding: 1px 6px; border-radius: 4px;">${h.note || ('Termin ' + h.stage)}: ${formatRupiah(h.amount)}</span>`).join('') +
                                             `</div>`;
                                     }
 
