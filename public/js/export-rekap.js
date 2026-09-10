@@ -332,6 +332,13 @@ const ExportRekap = {
                             <td style="text-align:right; font-weight:bold; color:#16a34a;">${this.formatRupiah(emp.honorAmt)}</td>
                         </tr>
                     `).join('')}
+                    <tr style="background-color:#e2e8f0; font-weight:bold;">
+                        <td colspan="4" style="text-align:right; text-transform:uppercase;">Total Keseluruhan Tim:</td>
+                        <td style="text-align:center;">${data.employeeData.reduce((s, e) => s + e.totalTasks, 0)}</td>
+                        <td style="text-align:center; color:#16a34a;">${data.employeeData.reduce((s, e) => s + e.completed, 0)}</td>
+                        <td style="text-align:center; color:#d97706;">${data.employeeData.reduce((s, e) => s + e.running, 0)}</td>
+                        <td style="text-align:right; color:#16a34a;">${this.formatRupiah(data.totalHonorPaidout)}</td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -391,6 +398,10 @@ const ExportRekap = {
                             </tr>
                         `;
                     }).join('')}
+                    <tr style="background-color:#e2e8f0; font-weight:bold;">
+                        <td colspan="5" style="text-align:right; text-transform:uppercase;">Total Akumulasi Honor Terbayar (${data.tasks.length} Tugas):</td>
+                        <td style="text-align:right; color:#16a34a; font-size:12px;">${this.formatRupiah(data.totalHonorPaidout)}</td>
+                    </tr>
                 </tbody>
             </table>
 
