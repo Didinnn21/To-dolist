@@ -143,7 +143,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     function renderTaskTerminBadge(t) {
         const history = t.paymentHistory || [];
         const count = history.length;
-        const honorAmt = Number(t.honorAmount) || 0;
+        const honorAmt = count > 0 
+            ? history.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+            : (Number(t.honorAmount) || 0);
 
         let historyChips = "";
         if (count > 0) {

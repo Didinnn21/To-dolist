@@ -84,10 +84,11 @@ const DB = {
             ? progressUpdates.filter(u => u && u.isHonorPayment)
             : [];
 
-        let honorAmt = Number(t.honor_amount) || Number(t.honorAmount) || 0;
+        let honorAmt = 0;
         if (paymentHistory.length > 0) {
-            const historySum = paymentHistory.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-            if (historySum > honorAmt) honorAmt = historySum;
+            honorAmt = paymentHistory.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+        } else {
+            honorAmt = Number(t.honor_amount) || Number(t.honorAmount) || 0;
         }
 
         return {
@@ -848,8 +849,7 @@ const DB = {
                     }
                 }
 
-                const currentHonor = task ? (Number(task.honorAmount) || 0) : 0;
-                const updatedHonorTotal = currentHonor + taskAmount;
+                const updatedHonorTotal = currentHistory.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
 
                 // Try updating Supabase wf_tasks with 3-tier fallback if columns are missing in Supabase schema
                 try {
