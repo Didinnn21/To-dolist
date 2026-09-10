@@ -229,6 +229,12 @@ const DB = {
             this._checkDeadlineReminders();
             console.log('✅ Background sync Supabase selesai.');
 
+            // Trigger dynamic re-render of active view if functions exist
+            if (typeof window.renderDashboardTasks === 'function') window.renderDashboardTasks();
+            if (typeof window.updateStats === 'function') window.updateStats();
+            if (typeof window.renderHonor === 'function') window.renderHonor();
+            if (typeof window.renderTasks === 'function') window.renderTasks();
+
         } catch (err) {
             if (err.message === 'Unauthorized') return;
             console.error('Gagal memuat data:', err.message);

@@ -255,6 +255,11 @@ const Auth = {
             localStorage.setItem('dzhirasena_user_cache',    JSON.stringify(profile));
             sessionStorage.removeItem('dzhirasena_db_cache');
 
+            // Pre-fetch DB data during login process so dashboard renders instantly without waiting
+            if (typeof DB !== 'undefined' && DB._fetchFreshData) {
+                await DB._fetchFreshData().catch(() => {});
+            }
+
             return { success: true, user: profile };
 
         } catch (err) {
