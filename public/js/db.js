@@ -868,6 +868,9 @@ const DB = {
                 }
             }
 
+            // Immediately persist updated task honor state into localStorage
+            this._updateCache();
+
             // Simpan record honor payment
             const honorRecord = {
                 id:            `honor-${Date.now()}`,

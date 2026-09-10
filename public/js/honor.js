@@ -192,8 +192,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Calculate tasks metrics per employee (both in-progress and completed)
         const honorData = employees.map(emp => {
             const empTasks = DB.tasks.filter(t => {
-                const assignedIds = DB._parseAssignees(t.assignedTo);
-                return assignedIds.includes(emp.id);
+                const assignedIds = DB._parseAssignees(t.assignedTo).map(String);
+                return assignedIds.includes(String(emp.id));
             });
 
             const selesai = empTasks.filter(t => t.status === "Completed" || t.status === "Paid").length;
