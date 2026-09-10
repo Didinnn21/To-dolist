@@ -809,13 +809,13 @@ const DB = {
                 let isPelunasan = (stageType === 'pelunasan') || forceMarkPaid;
                 
                 let stageNum = currentHistory.length + 1;
-                let noteLabel = `Pembayaran ${stageNum} (Termin ${stageNum})`;
+                let noteLabel = `Termin ${stageNum}`;
 
                 if (isPelunasan) {
                     noteLabel = 'Pelunasan (Lunas)';
                 } else if (stageType && !isNaN(parseInt(stageType))) {
                     stageNum = parseInt(stageType);
-                    noteLabel = `Pembayaran ${stageNum} (Termin ${stageNum})`;
+                    noteLabel = `Termin ${stageNum}`;
                 }
 
                 lastStageNote = noteLabel;

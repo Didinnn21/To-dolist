@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const selectedStage = typeSelect ? typeSelect.value : '1';
 
         const isFinalStage = (selectedStage === 'pelunasan');
-        const stageLabel = isFinalStage ? "Pelunasan (Lunas)" : `Pembayaran ${selectedStage} (Termin ${selectedStage})`;
+        const stageLabel = isFinalStage ? "Pelunasan (Lunas)" : `Termin ${selectedStage}`;
         const statusNote = isFinalStage 
             ? "Status tugas akan diperbarui menjadi Lunas (Paid)." 
             : `Pembayaran ${stageLabel}. Status tugas tetap 'Dalam Proses' agar karyawan dapat melanjutkan pekerjaan.`;
@@ -259,16 +259,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                                     const defaultStage = t.status === "Completed" ? "pelunasan" : String(count + 1);
 
                                     const stagesList = [
-                                        { val: "1", label: "Pembayaran 1 (Termin 1)" },
-                                        { val: "2", label: "Pembayaran 2 (Termin 2)" },
-                                        { val: "3", label: "Pembayaran 3 (Termin 3)" },
-                                        { val: "4", label: "Pembayaran 4 (Termin 4)" },
-                                        { val: "5", label: "Pembayaran 5 (Termin 5)" },
-                                        { val: "pelunasan", label: "Pembayaran Pelunasan (Lunas)" }
+                                        { val: "1", label: "Termin 1" },
+                                        { val: "2", label: "Termin 2" },
+                                        { val: "3", label: "Termin 3" },
+                                        { val: "4", label: "Termin 4" },
+                                        { val: "5", label: "Termin 5" },
+                                        { val: "pelunasan", label: "Pelunasan (Lunas)" }
                                     ];
 
                                     const selectOptionsHtml = isFullyPaid 
-                                        ? `<option value="pelunasan" selected>Pembayaran Pelunasan (Lunas)</option>` 
+                                        ? `<option value="pelunasan" selected>Pelunasan (Lunas)</option>` 
                                         : stagesList.map(opt => `
                                             <option value="${opt.val}" ${opt.val === defaultStage ? 'selected' : ''}>${opt.label}</option>
                                         `).join('');
