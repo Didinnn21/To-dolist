@@ -119,137 +119,193 @@ const ExportRekap = {
             <![endif]-->
             <style>
                 body {
-                    font-family: Arial, sans-serif;
-                    color: #1e293b;
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    color: #0f172a;
                     background-color: #ffffff;
                     margin: 0;
-                    padding: 20px;
+                    padding: 24px;
+                    font-size: 11px;
+                    line-height: 1.5;
                 }
                 .company-header-table {
                     width: 100%;
-                    border-bottom: 3px double #2563eb;
-                    margin-bottom: 20px;
-                    padding-bottom: 10px;
+                    border-bottom: 3px solid #1e40af;
+                    margin-bottom: 24px;
+                    padding-bottom: 14px;
                 }
                 .company-title {
-                    font-size: 22px;
-                    font-weight: bold;
-                    color: #2563eb;
+                    font-size: 24px;
+                    font-weight: 800;
+                    color: #1e40af;
+                    letter-spacing: 0.5px;
                     margin: 0;
                 }
                 .report-subtitle {
-                    font-size: 13px;
-                    font-weight: bold;
+                    font-size: 12px;
+                    font-weight: 700;
                     color: #475569;
                     margin-top: 4px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
-                .meta-text {
+                .meta-card {
+                    background-color: #f8fafc;
+                    border: 1px solid #cbd5e1;
+                    padding: 8px 14px;
                     font-size: 11px;
-                    color: #64748b;
-                    text-align: right;
+                    color: #334155;
+                    border-radius: 4px;
                 }
                 .section-header {
-                    font-size: 14px;
+                    font-size: 13px;
                     font-weight: bold;
-                    color: #0f172a;
-                    background-color: #f1f5f9;
-                    padding: 8px 10px;
-                    margin-top: 20px;
-                    margin-bottom: 10px;
-                    border-left: 4px solid #2563eb;
+                    color: #ffffff;
+                    background-color: #1e293b;
+                    padding: 8px 12px;
+                    margin-top: 24px;
+                    margin-bottom: 12px;
+                    border-radius: 4px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
                 .metrics-table {
                     width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 20px;
+                    border-collapse: separate;
+                    border-spacing: 8px 0;
+                    margin-bottom: 24px;
                 }
-                .metrics-table td {
-                    width: 25%;
-                    padding: 10px;
+                .metrics-card {
+                    padding: 12px;
                     background-color: #f8fafc;
                     border: 1px solid #cbd5e1;
+                    border-top: 4px solid #1e40af;
                     text-align: center;
                 }
                 .metric-label {
-                    font-size: 10px;
-                    font-weight: bold;
+                    font-size: 9.5px;
+                    font-weight: 700;
                     color: #64748b;
                     text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
                 .metric-value {
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: #1e293b;
-                    margin-top: 4px;
+                    font-size: 17px;
+                    font-weight: 800;
+                    color: #0f172a;
+                    margin-top: 6px;
                 }
                 .data-table {
                     width: 100%;
                     border-collapse: collapse;
-                    margin-bottom: 20px;
+                    margin-bottom: 24px;
                     font-size: 11px;
                 }
                 .data-table th {
-                    background-color: #e2e8f0;
-                    color: #1e293b;
-                    font-weight: bold;
-                    padding: 8px;
-                    border: 1px solid #cbd5e1;
+                    background-color: #334155;
+                    color: #ffffff;
+                    font-weight: 700;
+                    padding: 9px 10px;
+                    border: 1px solid #334155;
                     text-align: left;
+                    font-size: 10.5px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.3px;
                 }
                 .data-table td {
-                    padding: 8px;
+                    padding: 9px 10px;
                     border: 1px solid #e2e8f0;
                     vertical-align: middle;
                 }
-                .badge {
-                    padding: 3px 6px;
+                .badge-paid {
+                    color: #15803d;
+                    background-color: #dcfce7;
+                    padding: 3px 8px;
                     font-weight: bold;
+                    border-radius: 4px;
                     font-size: 10px;
+                }
+                .badge-completed {
+                    color: #0369a1;
+                    background-color: #e0f2fe;
+                    padding: 3px 8px;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    font-size: 10px;
+                }
+                .badge-process {
+                    color: #b45309;
+                    background-color: #fef3c7;
+                    padding: 3px 8px;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    font-size: 10px;
+                }
+                .badge-termin {
+                    color: #1d4ed8;
+                    background-color: #eff6ff;
+                    padding: 3px 8px;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    font-size: 10px;
+                }
+                .termin-history-box {
+                    margin-top: 4px;
+                    padding-top: 4px;
+                    border-top: 1px dashed #cbd5e1;
+                    font-size: 9.5px;
+                    color: #475569;
                 }
                 .sign-table {
                     width: 100%;
-                    margin-top: 40px;
-                    font-size: 12px;
+                    margin-top: 50px;
+                    font-size: 11px;
                 }
             </style>
         </head>
         <body>
             <table class="company-header-table">
                 <tr>
-                    <td style="border:none;">
+                    <td style="border:none; vertical-align:middle;">
                         <div class="company-title">DZHIRASENA MANAGEMENT</div>
-                        <div class="report-subtitle">REKAPITULASI LAPORAN KINERJA, TUGAS & HONORARIUM (ALL ACCOUNTS)</div>
+                        <div class="report-subtitle">Laporan Rekapitulasi Kinerja, Tugas & Honorarium Tim</div>
                     </td>
-                    <td class="meta-text" style="border:none;">
-                        <div>Tanggal Cetak: <strong>${dateFormatted} ${timeFormatted}</strong></div>
-                        <div>Dicetak Oleh: <strong>${data.generatedBy} (Admin)</strong></div>
+                    <td style="border:none; width:260px; vertical-align:middle;">
+                        <div class="meta-card">
+                            <div>Tanggal Cetak: <strong>${dateFormatted} ${timeFormatted}</strong></div>
+                            <div>Dicetak Oleh: <strong>${data.generatedBy} (Admin)</strong></div>
+                            <div>Status Dokumen: <strong>Resmi / Official</strong></div>
+                        </div>
                     </td>
                 </tr>
             </table>
 
-            <div class="section-header">1. RINGKASAN EKSEKUTIF UTAMA</div>
+            <div class="section-header">1. Ringkasan Eksekutif Utama</div>
             <table class="metrics-table">
                 <tr>
-                    <td>
+                    <td class="metrics-card">
                         <div class="metric-label">Total Akun Terdaftar</div>
-                        <div class="metric-value" style="color:#2563eb;">${data.totalUsers} Akun (${data.totalStaff} Karyawan)</div>
+                        <div class="metric-value" style="color:#1e40af;">${data.totalUsers} Akun</div>
+                        <div style="font-size:9.5px; color:#64748b; margin-top:2px;">(${data.totalStaff} Karyawan Staff)</div>
                     </td>
-                    <td>
+                    <td class="metrics-card">
                         <div class="metric-label">Total Tugas Keseluruhan</div>
                         <div class="metric-value">${data.totalTasks} Tugas</div>
+                        <div style="font-size:9.5px; color:#64748b; margin-top:2px;">(Seluruh Tim)</div>
                     </td>
-                    <td>
+                    <td class="metrics-card">
                         <div class="metric-label">Tugas Selesai / Lunas</div>
                         <div class="metric-value" style="color:#16a34a;">${data.totalCompleted} Tugas</div>
+                        <div style="font-size:9.5px; color:#16a34a; margin-top:2px;">(${data.totalTasks > 0 ? Math.round((data.totalCompleted / data.totalTasks) * 100) : 0}% Tingkat Penyelesaian)</div>
                     </td>
-                    <td>
+                    <td class="metrics-card">
                         <div class="metric-label">Total Honor Terbayar</div>
                         <div class="metric-value" style="color:#16a34a;">${this.formatRupiah(data.totalHonorPaidout)}</div>
+                        <div style="font-size:9.5px; color:#16a34a; margin-top:2px;">(Akumulasi Pembayaran)</div>
                     </td>
                 </tr>
             </table>
 
-            <div class="section-header">2. REKAPITULASI KINERJA PER KARYAWAN</div>
+            <div class="section-header">2. Rekapitulasi Kinerja Per Karyawan</div>
             <table class="data-table">
                 <thead>
                     <tr>
@@ -258,7 +314,7 @@ const ExportRekap = {
                         <th>Email</th>
                         <th>Role / Jabatan</th>
                         <th style="text-align:center;">Total Tugas</th>
-                        <th style="text-align:center;">Selesai</th>
+                        <th style="text-align:center;">Selesai / Lunas</th>
                         <th style="text-align:center;">Masih Proses</th>
                         <th style="text-align:right;">Total Honor Dibayar</th>
                     </tr>
@@ -266,11 +322,11 @@ const ExportRekap = {
                 <tbody>
                     ${data.employeeData.map((emp, i) => `
                         <tr ${i % 2 === 1 ? 'style="background-color:#f8fafc;"' : ''}>
-                            <td style="text-align:center;">${i + 1}</td>
+                            <td style="text-align:center; font-weight:bold;">${i + 1}</td>
                             <td><strong>${emp.name}</strong></td>
-                            <td>${emp.email}</td>
-                            <td>${emp.role}</td>
-                            <td style="text-align:center;">${emp.totalTasks}</td>
+                            <td style="color:#475569;">${emp.email}</td>
+                            <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:3px; font-weight:600; font-size:10px;">${emp.role}</span></td>
+                            <td style="text-align:center; font-weight:bold;">${emp.totalTasks}</td>
                             <td style="text-align:center; font-weight:bold; color:#16a34a;">${emp.completed}</td>
                             <td style="text-align:center; font-weight:bold; color:#d97706;">${emp.running}</td>
                             <td style="text-align:right; font-weight:bold; color:#16a34a;">${this.formatRupiah(emp.honorAmt)}</td>
@@ -279,17 +335,16 @@ const ExportRekap = {
                 </tbody>
             </table>
 
-            <div class="section-header">3. RINCIAN SELURUH TUGAS TIM</div>
+            <div class="section-header">3. Rincian Seluruh Tugas & Riwayat Pembayaran Honor</div>
             <table class="data-table">
                 <thead>
                     <tr>
                         <th style="width:30px; text-align:center;">No</th>
-                        <th>Judul Tugas</th>
-                        <th>Kategori</th>
-                        <th>Prioritas</th>
+                        <th>Judul Tugas & Kategori</th>
+                        <th style="text-align:center;">Prioritas</th>
                         <th>Penanggung Jawab</th>
                         <th style="text-align:center;">Status Tugas</th>
-                        <th style="text-align:right;">Nominal Honor</th>
+                        <th style="text-align:right;">Nominal & Riwayat Honor</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -301,36 +356,37 @@ const ExportRekap = {
                         }).join(', ') || '-';
 
                         const amt = Number(t.honorAmount) || 0;
-                        let statusText = "🔄 Masih Proses";
-                        let statusColor = "#d97706";
+                        let statusBadge = `<span class="badge-process">🔄 Masih Proses</span>`;
                         if (t.status === "Paid") {
-                            statusText = "💵 Lunas";
-                            statusColor = "#16a34a";
+                            statusBadge = `<span class="badge-paid">💵 Lunas</span>`;
                         } else if (t.status === "Completed") {
-                            statusText = "✅ Selesai";
-                            statusColor = "#0284c7";
+                            statusBadge = `<span class="badge-completed">✅ Selesai</span>`;
                         } else if (amt > 0) {
-                            statusText = "💰 Termin Terbayar";
-                            statusColor = "#2563eb";
+                            statusBadge = `<span class="badge-termin">💰 Termin Terbayar</span>`;
                         }
 
-                        let terminBreakdown = '';
+                        let historyHtml = '';
                         if (t.paymentHistory && t.paymentHistory.length > 0) {
-                            terminBreakdown = `<br><span style="font-size:9px; color:#475569; font-weight:normal;">` +
-                                t.paymentHistory.map(h => `${h.note || ('Termin ' + h.stage)}: ${this.formatRupiah(h.amount)}`).join(' | ') +
-                                `</span>`;
+                            historyHtml = `<div class="termin-history-box">` +
+                                t.paymentHistory.map(h => `• ${h.note || ('Termin ' + h.stage)}: ${this.formatRupiah(h.amount)}`).join('<br>') +
+                                `</div>`;
                         }
 
                         return `
                             <tr ${i % 2 === 1 ? 'style="background-color:#f8fafc;"' : ''}>
-                                <td style="text-align:center;">${i + 1}</td>
-                                <td><strong>${t.title}</strong></td>
-                                <td>${t.category || 'General'}</td>
-                                <td>${this.formatPriority(t.priority)}</td>
-                                <td>${assigneeNames}</td>
-                                <td style="text-align:center; font-weight:bold; color:${statusColor};">${statusText}</td>
-                                <td style="text-align:right; font-weight:bold; color:${amt > 0 ? '#16a34a' : '#64748b'};">
-                                    ${this.formatRupiah(amt)}${terminBreakdown}
+                                <td style="text-align:center; font-weight:bold;">${i + 1}</td>
+                                <td>
+                                    <strong>${t.title}</strong>
+                                    <div style="font-size:9.5px; color:#64748b; margin-top:2px;">Kategori: ${t.category || 'General'}</div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span style="font-weight:600; font-size:10px;">${this.formatPriority(t.priority)}</span>
+                                </td>
+                                <td><strong>${assigneeNames}</strong></td>
+                                <td style="text-align:center;">${statusBadge}</td>
+                                <td style="text-align:right;">
+                                    <div style="font-weight:bold; color:${amt > 0 ? '#16a34a' : '#64748b'}; font-size:11.5px;">${this.formatRupiah(amt)}</div>
+                                    ${historyHtml}
                                 </td>
                             </tr>
                         `;
@@ -338,17 +394,18 @@ const ExportRekap = {
                 </tbody>
             </table>
 
+            <br>
             <table class="sign-table">
                 <tr>
                     <td style="width:50%; text-align:center; border:none;">
                         <div>Mengetahui,</div>
-                        <div><strong>Atasan / Supervisor</strong></div>
+                        <div style="font-weight:bold; margin-top:2px;">Atasan / Supervisor</div>
                         <br><br><br><br>
                         <div>( ____________________ )</div>
                     </td>
                     <td style="width:50%; text-align:center; border:none;">
                         <div>Dibuat Oleh,</div>
-                        <div><strong>Administrator System</strong></div>
+                        <div style="font-weight:bold; margin-top:2px;">Administrator System</div>
                         <br><br><br><br>
                         <div>( <strong>${data.generatedBy}</strong> )</div>
                     </td>
