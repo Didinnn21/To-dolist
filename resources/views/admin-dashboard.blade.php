@@ -234,13 +234,13 @@
     </div>
 
     <!-- Shared Scripts -->
-    <script src="{{ asset('js/db.js') }}"></script>
-    <script src="{{ asset('js/auth.js') }}"></script>
-    <script src="{{ asset('js/layout.js') }}"></script>
-    <script src="{{ asset('js/export-rekap.js') }}"></script>
+    <script src="{{ asset('js/db.js') }}?v=3.0"></script>
+    <script src="{{ asset('js/auth.js') }}?v=3.0"></script>
+    <script src="{{ asset('js/layout.js') }}?v=3.0"></script>
+    <script src="{{ asset('js/export-rekap.js') }}?v=3.0"></script>
 
     <!-- Page Logic -->
-    <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script src="{{ asset('js/dashboard.js') }}?v=3.0"></script>
 </body>
 
 </html>
