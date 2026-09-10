@@ -851,6 +851,7 @@ const DB = {
                 const currentHonor = task ? (Number(task.honorAmount) || 0) : 0;
                 const updatedHonorTotal = currentHonor + taskAmount;
 
+                // Try updating Supabase wf_tasks with 3-tier fallback if columns are missing in Supabase schema
                 try {
                     await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
                         method: 'PATCH',
@@ -860,10 +861,9 @@ const DB = {
                             progress_updates: JSON.stringify(currentProgress)
                         })
                     });
-                } catch (sbErr) {
-                    // Jika kolom progress_updates tidak/belum ada di tabel wf_tasks Supabase, fallback patch tanpa progress_updates
-                    if (sbErr.message && (sbErr.message.includes('progress_updates') || sbErr.message.includes('column'))) {
-                        console.warn('Kolom progress_updates belum ada di wf_tasks, fallback update status & honor_amount');
+                } catch (e1) {
+                    console.warn('Patch dengan progress_updates gagal, mencoba patch tanpa progress_updates:', e1.message);
+                    try {
                         await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
                             method: 'PATCH',
                             body: JSON.stringify({
@@ -871,8 +871,16 @@ const DB = {
                                 honor_amount: updatedHonorTotal
                             })
                         });
-                    } else {
-                        throw sbErr;
+                    } catch (e2) {
+                        console.warn('Patch dengan honor_amount gagal, mencoba patch status saja:', e2.message);
+                        try {
+                            await this._sb(`/rest/v1/wf_tasks?id=eq.${taskId}`, {
+                                method: 'PATCH',
+                                body: JSON.stringify({ status: targetStatus })
+                            });
+                        } catch (e3) {
+                            console.error('Supabase patch gagal seluruhnya, tetap simpan di memory & cache lokal:', e3.message);
+                        }
                     }
                 }
 
